@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教室隨行簿</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --paper:#F5F1E8;
+    --paper-deep:#EDE7D8;
+    --line:#DBD3BE;
+    --ink:#22314A;
+    --ink-soft:#5A6580;
+    --seal:#B23A2E;
+    --seal-dark:#8F2E24;
+    --brass:#B8903E;
+    --good:#3F7A5C;
+    --good-bg:#E4EFE8;
+    --warn-bg:#F5E3DE;
+    --amber-bg:#F5EAD3;
+    --text:#2B2A25;
+    --radius:3px;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:var(--font);
+    background:var(--paper-deep);
+    color:var(--text);
+    font-size:15px;
+    line-height:1.5;
+  }
+  #app{display:flex;min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:230px;
+    flex-shrink:0;
+    background:var(--ink);
+    color:#EDE9DC;
+    padding:22px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .brand{
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:.5px;
+    border-bottom:2px solid var(--brass);
+    padding-bottom:12px;
+  }
+  .brand small{display:block;font-weight:400;font-size:11.5px;color:#B9C0D2;margin-top:4px;letter-spacing:.3px;}
+  .class-list{display:flex;flex-direction:column;gap:6px;}
+  .class-item{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 10px;border-radius:var(--radius);cursor:pointer;
+    font-size:14px; color:#D9DEEA;
+    border:1px solid transparent;
+  }
+  .class-item:hover{background:rgba(255,255,255,.06);}
+  .class-item.active{background:#EDE9DC;color:var(--ink);font-weight:700;}
+  .class-item .del{opacity:.5;padding:0 4px;font-size:12px;}
+  .class-item .del:hover{opacity:1;color:var(--seal);}
+  .add-class{
+    margin-top:2px;
+    background:transparent;border:1px dashed #5C6787;color:#C7CCDC;
+    padding:8px;border-radius:var(--radius);cursor:pointer;font-size:13px;
+  }
+  .add-class:hover{border-color:var(--brass);color:var(--brass);}
+  .sidebar-foot{margin-top:auto;font-size:11px;color:#7C87A3;line-height:1.6;}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;padding:28px 36px;overflow-x:auto;}
+  .topline{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:3px double var(--ink);
+    padding-bottom:10px;margin-bottom:18px;
+  }
+  h1{font-size:22px;margin:0;font-weight:700;letter-spacing:.5px;}
+  .date-tag{font-size:13px;color:var(--ink-soft);}
+
+  .tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{
+    padding:9px 16px;border:1px solid var(--line);border-bottom:none;
+    background:var(--paper);color:var(--ink-soft);cursor:pointer;
+    border-radius:var(--radius) var(--radius) 0 0;font-size:14px;
+  }
+  .tab.active{background:#fff;color:var(--ink);font-weight:700;border-color:var(--ink);border-bottom:3px solid #fff;margin-bottom:-1px;}
+
+  .panel{
+    background:#fff;border:1px solid var(--line);border-radius:0 var(--radius) var(--radius) var(--radius);
+    padding:22px;
+  }
+  .empty{
+    padding:36px 10px;text-align:center;color:var(--ink-soft);font-size:14px;
+  }
+
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  button.btn{
+    background:var(--ink);color:#fff;border:none;padding:8px 14px;
+    border-radius:var(--radius);cursor:pointer;font-size:13.5px;font-family:var(--font);
+  }
+  button.btn:hover{background:#2C3D5C;}
+  button.btn.seal{background:var(--seal);}
+  button.btn.seal:hover{background:var(--seal-dark);}
+  button.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  button.btn.ghost:hover{border-color:var(--ink);}
+  button.small{padding:4px 9px;font-size:12px;border-radius:var(--radius);border:1px solid var(--line);background:#fff;cursor:pointer;}
+  button.small:hover{border-color:var(--ink);}
+  button.small.plus{color:var(--good);}
+  button.small.minus{color:var(--seal);}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{
+    text-align:left;font-weight:700;color:var(--ink);
+    border-bottom:2px solid var(--ink);padding:8px 10px;
+    background:linear-gradient(var(--paper),var(--paper));
+    white-space:nowrap;
+  }
+  tbody td{padding:7px 10px;border-bottom:1px solid var(--line);}
+  tbody tr:hover{background:#FBF9F3;}
+  td.num, th.num{text-align:center;font-variant-numeric:tabular-nums;}
+  input.cell-input{
+    width:64px;border:none;border-bottom:1px solid var(--line);background:transparent;
+    font-family:var(--font);font-size:14px;text-align:center;padding:3px;
+  }
+  input.cell-input:focus{outline:none;border-bottom:1px solid var(--seal);}
+  input.name-input{width:100px;text-align:left;}
+
+  .status-btns{display:flex;gap:4px;}
+  .status-btn{border:1px solid var(--line);background:#fff;padding:4px 10px;border-radius:var(--radius);cursor:pointer;font-size:12.5px;}
+  .status-btn.present.on{background:var(--good-bg);border-color:var(--good);color:var(--good);font-weight:700;}
+  .status-btn.absent.on{background:var(--warn-bg);border-color:var(--seal);color:var(--seal);font-weight:700;}
+  .status-btn.late.on{background:var(--amber-bg);border-color:var(--brass);color:var(--brass);font-weight:700;}
+
+  .field-row{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  .field-row label{font-size:13px;color:var(--ink-soft);}
+  input[type=date], input[type=number], input[type=text]{
+    font-family:var(--font);padding:6px 8px;border:1px solid var(--line);border-radius:var(--radius);font-size:14px;
+  }
+
+  .draw-stage{
+    text-align:center;padding:40px 10px;border:1px dashed var(--line);border-radius:var(--radius);margin-bottom:18px;
+  }
+  .draw-result{font-size:34px;font-weight:700;color:var(--seal);letter-spacing:2px;min-height:48px;}
+  .draw-sub{font-size:13px;color:var(--ink-soft);margin-top:6px;}
+
+  .groups-wrap{display:flex;gap:14px;flex-wrap:wrap;}
+  .group-card{
+    background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 14px;min-width:130px;
+  }
+  .group-card h3{margin:0 0 8px;font-size:13.5px;color:var(--ink);border-bottom:1px solid var(--line);padding-bottom:6px;}
+  .group-card ul{margin:0;padding-left:18px;font-size:13.5px;}
+
+  .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--paper);border:1px solid var(--line);border-radius:14px;
+    padding:4px 10px;font-size:12.5px;
+  }
+  .chip .x{cursor:pointer;color:var(--ink-soft);}
+  .chip .x:hover{color:var(--seal);}
+  .section-label{font-size:13px;font-weight:700;color:var(--ink);margin:18px 0 8px;}
+  .hint{font-size:12.5px;color:var(--ink-soft);margin-top:10px;line-height:1.7;}
+  .io-box{border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+  .io-box h3{margin:0 0 8px;font-size:14.5px;}
+  .file-input{font-size:13px;}
+  #ioMsg{margin-top:10px;font-size:13px;color:var(--good);}
+  #ioMsg.err{color:var(--seal);}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">教室隨行簿<small>個人課堂記錄 · 離線使用</small></div>
+    <div id="classList" class="class-list"></div>
+    <button class="add-class" onclick="addClass()">＋ 新增班級</button>
+    <div class="sidebar-foot">
+      <div id="cloudStatus" style="margin-bottom:6px;"></div>
+      資料會同步到共用雲端資料庫，任何裝置打開這個網址都會看到同一份資料。<br>仍建議定期到「匯出入」分頁下載 Excel 備份。
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topline">
+      <h1 id="className">尚未選擇班級</h1>
+      <span class="date-tag" id="todayTag"></span>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+    <div class="panel" id="panel"></div>
+  </main>
+</div>
+
+<script>
+/* ================= 資料層 ================= */
+const STORAGE_KEY = "classroom_companion_v1";
+let state = load();
+let currentView = "roster";
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { classes:{}, currentClassId:null };
+}
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  queueCloudSave();
+}
+
+/* ---- 雲端同步（Cloudflare Pages Function + KV） ---- */
+let cloudSaveTimer = null;
+let cloudStatus = "idle"; // idle | saving | saved | error | offline
+function queueCloudSave(){
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(doCloudSave, 500);
+}
+async function doCloudSave(){
+  setCloudStatus("saving");
+  try{
+    const res = await fetch("/api/data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state)
+    });
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    setCloudStatus("saved");
+  }catch(e){
+    setCloudStatus("error");
+  }
+}
+async function loadFromCloud(){
+  setCloudStatus("loading");
+  try{
+    const res = await fetch("/api/data");
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const remote = await res.json();
+    if(remote && typeof remote === "object" && remote.classes){
+      state = remote;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+    setCloudStatus("saved");
+  }catch(e){
+    // 離線或尚未部署雲端功能：沿用瀏覽器本機資料
+    setCloudStatus("offline");
+  }
+}
+function setCloudStatus(s){
+  cloudStatus = s;
+  const el = document.getElementById("cloudStatus");
+  if(!el) return;
+  const map = {
+    idle:"", loading:"雲端讀取中…", saving:"儲存中…",
+    saved:"已同步至雲端 ✓", error:"雲端儲存失敗（將保留在本機）",
+    offline:"離線模式（僅存於本機瀏覽器）"
+  };
+  el.textContent = map[s] || "";
+  el.style.color = (s==="error") ? "#E7DCC9" : (s==="offline" ? "#E7DCC9" : "#9FD8B6");
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function currentClass(){ return state.classes[state.currentClassId] || null; }
+
+/* ================= 班級管理 ================= */
+function addClass(){
+  const name = prompt("請輸入新班級名稱（例如：301）");
+  if(!name) return;
+  const id = uid();
+  state.classes[id] = { id, name, students:[], attendance:{}, assessments:[] };
+  state.currentClassId = id;
+  save(); renderAll();
+}
+function deleteClass(id, ev){
+  ev.stopPropagation();
+  const c = state.classes[id];
+  if(!confirm(`確定要刪除「${c.name}」班級嗎？此動作無法復原。`)) return;
+  delete state.classes[id];
+  if(state.currentClassId === id){
+    const keys = Object.keys(state.classes);
+    state.currentClassId = keys.length ? keys[0] : null;
+  }
+  save(); renderAll();
+}
+function selectClass(id){ state.currentClassId = id; save(); renderAll(); }
+
+/* ================= 學生管理 ================= */
+function nextSeatNo(c){
+  return c.students.length ? Math.max(...c.students.map(s=>s.seatNo||0)) + 1 : 1;
+}
+function addStudent(){
+  const c = currentClass(); if(!c) return;
+  const name = prompt("請輸入學生姓名");
+  if(!name) return;
+  c.students.push({ id:uid(), seatNo: nextSeatNo(c), name, score:0, marks:{} });
+  c.students.sort((a,b)=>a.seatNo-b.seatNo);
+  save(); renderView();
+}
+function deleteStudent(sid){
+  const c = currentClass(); if(!c) return;
+  if(!confirm("確定要刪除這位學生嗎？")) return;
+  c.students = c.students.filter(s=>s.id!==sid);
+  save(); renderView();
+}
+function bumpScore(sid, delta){
+  const c = currentClass(); if(!c) return;
+  const s = c.students.find(s=>s.id===sid); if(!s) return;
+  s.score = (s.score||0) + delta;
+  save(); renderView();
+}
+function setScore(sid, val){
+  const c = currentClass(); if(!c) return;
+  const s = c.students.find(s=>s.id===sid); if(!s) return;
+  s.score = Number(val)||0;
+  save();
+}
+function bulkAdjust(){
+  const c = currentClass(); if(!c || !c.students.length) return;
+  const v = prompt("請輸入要為全班加減的分數（例如 1 或 -1）","1");
+  if(v===null) return;
+  const delta = Number(v); if(Number.isNaN(delta)) return;
+  c.students.forEach(s=> s.score = (s.score||0)+delta );
+  save(); renderView();
+}
+function setName(sid,val){
+  const c = currentClass(); if(!c) return;
+  const s = c.students.find(s=>s.id===sid); if(!s) return;
+  s.name = val; save();
+}
+
+/* ================= 點名 ================= */
+let attDate = todayStr();
+function setAttStatus(sid, status){
+  const c = currentClass(); if(!c) return;
+  if(!c.attendance[attDate]) c.attendance[attDate] = {};
+  c.attendance[attDate][sid] = status;
+  save(); renderView();
+}
+function markAllPresent(){
+  const c = currentClass(); if(!c) return;
+  if(!c.attendance[attDate]) c.attendance[attDate] = {};
+  c.students.forEach(s=> c.attendance[attDate][s.id] = "present");
+  save(); renderView();
+}
+
+/* ================= 抽籤 / 分組 ================= */
+function drawOne(){
+  const c = currentClass(); if(!c || !c.students.length) return;
+  const pick = c.students[Math.floor(Math.random()*c.students.length)];
+  document.getElementById("drawResult").textContent = `${pick.seatNo}號　${pick.name}`;
+}
+let lastGroups = null;
+function makeGroups(){
+  const c = currentClass(); if(!c || !c.students.length) return;
+  const n = Math.max(1, Number(document.getElementById("groupCount").value)||4);
+  const shuffled = [...c.students].sort(()=>Math.random()-0.5);
+  const groups = Array.from({length:n}, ()=>[]);
+  shuffled.forEach((s,i)=> groups[i%n].push(s));
+  lastGroups = groups;
+  renderView();
+}
+
+/* ================= 平時考 / 定期評量 ================= */
+function addAssessment(type){
+  const c = currentClass(); if(!c) return;
+  const label = type==="quiz" ? "平時考" : "定期評量";
+  const name = prompt(`請輸入${label}名稱（例如：${type==="quiz"?"小考1":"第一次段考"}）`);
+  if(!name) return;
+  c.assessments.push({ id:uid(), name, type });
+  save(); renderView();
+}
+function removeAssessment(aid){
+  const c = currentClass(); if(!c) return;
+  if(!confirm("確定要刪除這個項目？學生在此項目的成績也會一併移除。")) return;
+  c.assessments = c.assessments.filter(a=>a.id!==aid);
+  c.students.forEach(s=>{ if(s.marks) delete s.marks[aid]; });
+  save(); renderView();
+}
+function setMark(sid, aid, val){
+  const c = currentClass(); if(!c) return;
+  const s = c.students.find(s=>s.id===sid); if(!s) return;
+  if(!s.marks) s.marks = {};
+  s.marks[aid] = val === "" ? "" : Number(val);
+  save();
+}
+
+/* ================= Excel 匯出 ================= */
+function exportExcel(){
+  const wb = XLSX.utils.book_new();
+  const classes = Object.values(state.classes);
+  if(!classes.length){ alert("目前沒有任何班級資料可以匯出。"); return; }
+
+  classes.forEach(c=>{
+    const quizzes = c.assessments.filter(a=>a.type==="quiz");
+    const exams = c.assessments.filter(a=>a.type==="exam");
+    const header = ["座號","姓名","目前分數", ...quizzes.map(q=>"平時考｜"+q.name), ...exams.map(e=>"定期評量｜"+e.name)];
+    const rows = [header];
+    [...c.students].sort((a,b)=>a.seatNo-b.seatNo).forEach(s=>{
+      const row = [s.seatNo, s.name, s.score||0];
+      quizzes.forEach(q=> row.push(s.marks && s.marks[q.id] !== undefined ? s.marks[q.id] : ""));
+      exams.forEach(e=> row.push(s.marks && s.marks[e.id] !== undefined ? s.marks[e.id] : ""));
+      rows.push(row);
+    });
+    const ws1 = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws1, safeSheetName(c.name+"-成績"));
+
+    const dates = Object.keys(c.attendance).sort();
+    if(dates.length){
+      const attHeader = ["座號","姓名", ...dates];
+      const attRows = [attHeader];
+      const labelMap = {present:"出席", absent:"缺席", late:"遲到"};
+      [...c.students].sort((a,b)=>a.seatNo-b.seatNo).forEach(s=>{
+        const row = [s.seatNo, s.name];
+        dates.forEach(d=> row.push(labelMap[c.attendance[d][s.id]] || ""));
+        attRows.push(row);
+      });
+      const ws2 = XLSX.utils.aoa_to_sheet(attRows);
+      XLSX.utils.book_append_sheet(wb, ws2, safeSheetName(c.name+"-點名"));
+    }
+  });
+
+  const stamp = todayStr();
+  XLSX.writeFile(wb, `教室隨行簿備份_${stamp}.xlsx`);
+}
+function safeSheetName(name){ return name.replace(/[\\\/\?\*\[\]:]/g,"_").slice(0,31); }
+
+/* ================= Excel 匯入 ================= */
+function importExcel(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
+      let importedClasses = 0, importedStudents = 0;
+      wb.SheetNames.forEach(sheetName=>{
+        const isScoreSheet = sheetName.endsWith("-成績");
+        const isAttSheet = sheetName.endsWith("-點名");
+        if(!isScoreSheet && !isAttSheet) return;
+        const className = sheetName.replace(/-(成績|點名)$/,"");
+        let c = Object.values(state.classes).find(cl=>cl.name===className);
+        if(!c){
+          const id = uid();
+          c = { id, name:className, students:[], attendance:{}, assessments:[] };
+          state.classes[id] = c;
+          importedClasses++;
+        }
+        const data = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval:""});
+        if(!data.length) return;
+        const header = data[0];
+
+        if(isScoreSheet){
+          const colDefs = header.slice(3).map(h=>{
+            const parts = String(h).split("｜");
+            return parts.length===2 ? {label:parts[1], type: parts[0]==="平時考"?"quiz":"exam"} : {label:h, type:"quiz"};
+          });
+          colDefs.forEach(def=>{
+            let a = c.assessments.find(a=>a.name===def.label && a.type===def.type);
+            if(!a){ a = {id:uid(), name:def.label, type:def.type}; c.assessments.push(a); }
+            def.id = a.id;
+          });
+          for(let r=1;r<data.length;r++){
+            const row = data[r];
+            if(row.length===0 || row[1]==="") continue;
+            const seatNo = Number(row[0])||0;
+            const name = String(row[1]);
+            let s = c.students.find(s=>s.name===name && s.seatNo===seatNo) || c.students.find(s=>s.name===name);
+            if(!s){
+              s = { id:uid(), seatNo: seatNo || nextSeatNo(c), name, score:0, marks:{} };
+              c.students.push(s);
+              importedStudents++;
+            }
+            s.score = Number(row[2])||0;
+            if(!s.marks) s.marks = {};
+            colDefs.forEach((def,i)=>{
+              const v = row[3+i];
+              if(v !== "" && v !== undefined) s.marks[def.id] = Number(v);
+            });
+          }
+        }
+
+        if(isAttSheet){
+          const dates = header.slice(2);
+          const labelMap = {"出席":"present","缺席":"absent","遲到":"late"};
+          for(let r=1;r<data.length;r++){
+            const row = data[r];
+            if(row.length===0 || row[1]==="") continue;
+            const seatNo = Number(row[0])||0;
+            const name = String(row[1]);
+            let s = c.students.find(s=>s.name===name && s.seatNo===seatNo) || c.students.find(s=>s.name===name);
+            if(!s){
+              s = { id:uid(), seatNo: seatNo || nextSeatNo(c), name, score:0, marks:{} };
+              c.students.push(s);
+              importedStudents++;
+            }
+            dates.forEach((d,i)=>{
+              const label = row[2+i];
+              if(label && labelMap[label]){
+                if(!c.attendance[d]) c.attendance[d] = {};
+                c.attendance[d][s.id] = labelMap[label];
+              }
+            });
+          }
+        }
+        c.students.sort((a,b)=>a.seatNo-b.seatNo);
+      });
+      save();
+      if(!state.currentClassId){
+        const keys = Object.keys(state.classes);
+        if(keys.length) state.currentClassId = keys[0];
+      }
+      showIoMsg(`匯入完成：新增 ${importedClasses} 個班級、新增或更新 ${importedStudents} 位學生資料。`, false);
+      renderAll();
+    }catch(err){
+      showIoMsg("匯入失敗，請確認這是由本系統匯出的 Excel 檔案。("+err.message+")", true);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value = "";
+}
+function showIoMsg(msg, isErr){
+  const el = document.getElementById("ioMsg");
+  if(!el) return;
+  el.textContent = msg;
+  el.className = isErr ? "err" : "";
+}
+
+/* ================= 畫面渲染 ================= */
+function renderAll(){
+  renderSidebar();
+  document.getElementById("todayTag").textContent = todayStr();
+  const c = currentClass();
+  document.getElementById("className").textContent = c ? c.name+" 班" : "尚未選擇班級";
+  renderTabs();
+  renderView();
+}
+
+function renderSidebar(){
+  const wrap = document.getElementById("classList");
+  const classes = Object.values(state.classes);
+  wrap.innerHTML = classes.map(c=>`
+    <div class="class-item ${c.id===state.currentClassId?'active':''}" onclick="selectClass('${c.id}')">
+      <span>${escapeHtml(c.name)}</span>
+      <span class="del" onclick="deleteClass('${c.id}', event)">✕</span>
+    </div>
+  `).join("") || `<div style="font-size:12.5px;color:#8B94AC;">尚未建立班級</div>`;
+}
+
+const TAB_DEFS = [
+  {key:"roster", label:"學生名單"},
+  {key:"attendance", label:"課堂點名"},
+  {key:"draw", label:"抽籤分組"},
+  {key:"scores", label:"成績登錄"},
+  {key:"io", label:"匯出入 Excel"},
+];
+function renderTabs(){
+  const wrap = document.getElementById("tabs");
+  wrap.innerHTML = TAB_DEFS.map(t=>`
+    <div class="tab ${t.key===currentView?'active':''}" onclick="switchView('${t.key}')">${t.label}</div>
+  `).join("");
+}
+function switchView(key){ currentView = key; renderView(); renderTabs(); }
+
+function renderView(){
+  const panel = document.getElementById("panel");
+  const c = currentClass();
+  if(!c){
+    panel.innerHTML = `<div class="empty">請先在左側新增或選擇一個班級。</div>`;
+    return;
+  }
+  if(currentView==="roster") return renderRoster(panel, c);
+  if(currentView==="attendance") return renderAttendance(panel, c);
+  if(currentView==="draw") return renderDraw(panel, c);
+  if(currentView==="scores") return renderScores(panel, c);
+  if(currentView==="io") return renderIo(panel, c);
+}
+
+function renderRoster(panel, c){
+  panel.innerHTML = `
+    <div class="toolbar">
+      <button class="btn" onclick="addStudent()">＋ 新增學生</button>
+      <button class="btn ghost" onclick="bulkAdjust()">全班加減分</button>
+    </div>
+    ${c.students.length ? `
+    <table>
+      <thead><tr><th class="num">座號</th><th>姓名</th><th class="num">目前分數</th><th class="num">操作</th></tr></thead>
+      <tbody>
+        ${[...c.students].sort((a,b)=>a.seatNo-b.seatNo).map(s=>`
+          <tr>
+            <td class="num">${s.seatNo}</td>
+            <td><input class="cell-input name-input" value="${escapeAttr(s.name)}" onchange="setName('${s.id}', this.value)"></td>
+            <td class="num"><input class="cell-input" type="number" value="${s.score||0}" onchange="setScore('${s.id}', this.value)"></td>
+            <td class="num">
+              <button class="small plus" onclick="bumpScore('${s.id}',1)">＋1</button>
+              <button class="small minus" onclick="bumpScore('${s.id}',-1)">－1</button>
+              <button class="small" onclick="deleteStudent('${s.id}')">刪除</button>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>` : `<div class="empty">這個班級還沒有學生，點上方「新增學生」開始建立名單。</div>`}
+  `;
+}
+
+function renderAttendance(panel, c){
+  const dayAtt = c.attendance[attDate] || {};
+  const present = Object.values(dayAtt).filter(v=>v==="present").length;
+  const absent = Object.values(dayAtt).filter(v=>v==="absent").length;
+  const late = Object.values(dayAtt).filter(v=>v==="late").length;
+  panel.innerHTML = `
+    <div class="field-row">
+      <label>日期</label>
+      <input type="date" value="${attDate}" onchange="attDate=this.value; renderView();">
+      <button class="btn" onclick="markAllPresent()">全班到齊</button>
+      <span style="font-size:13px;color:var(--ink-soft);">出席 ${present}　缺席 ${absent}　遲到 ${late}</span>
+    </div>
+    ${c.students.length ? `
+    <table>
+      <thead><tr><th class="num">座號</th><th>姓名</th><th>出席狀態</th></tr></thead>
+      <tbody>
+        ${[...c.students].sort((a,b)=>a.seatNo-b.seatNo).map(s=>{
+          const st = dayAtt[s.id];
+          return `
+          <tr>
+            <td class="num">${s.seatNo}</td>
+            <td>${escapeHtml(s.name)}</td>
+            <td>
+              <div class="status-btns">
+                <button class="status-btn present ${st==='present'?'on':''}" onclick="setAttStatus('${s.id}','present')">出席</button>
+                <button class="status-btn late ${st==='late'?'on':''}" onclick="setAttStatus('${s.id}','late')">遲到</button>
+                <button class="status-btn absent ${st==='absent'?'on':''}" onclick="setAttStatus('${s.id}','absent')">缺席</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>` : `<div class="empty">這個班級還沒有學生，請先到「學生名單」新增。</div>`}
+  `;
+}
+
+function renderDraw(panel, c){
+  panel.innerHTML = `
+    <div class="section-label">幸運抽籤</div>
+    <div class="draw-stage">
+      <div class="draw-result" id="drawResult">— 尚未抽籤 —</div>
+      <div class="draw-sub">從目前 ${c.students.length} 位學生中隨機抽出一位</div>
+    </div>
+    <div class="toolbar"><button class="btn seal" onclick="drawOne()">開始抽籤</button></div>
+
+    <div class="section-label">隨機分組</div>
+    <div class="field-row">
+      <label>要分成幾組？</label>
+      <input type="number" id="groupCount" min="1" value="4" style="width:70px;">
+      <button class="btn" onclick="makeGroups()">重新分組</button>
+    </div>
+    <div class="groups-wrap">
+      ${lastGroups ? lastGroups.map((g,i)=>`
+        <div class="group-card">
+          <h3>第 ${i+1} 組</h3>
+          <ul>${g.map(s=>`<li>${s.seatNo}號 ${escapeHtml(s.name)}</li>`).join("")}</ul>
+        </div>
+      `).join("") : `<div class="empty" style="width:100%;">尚未分組，設定組數後按「重新分組」。</div>`}
+    </div>
+  `;
+}
+
+function renderScores(panel, c){
+  const quizzes = c.assessments.filter(a=>a.type==="quiz");
+  const exams = c.assessments.filter(a=>a.type==="exam");
+  panel.innerHTML = `
+    <div class="section-label">平時考</div>
+    <div class="chip-row">
+      ${quizzes.map(a=>`<span class="chip">${escapeHtml(a.name)}<span class="x" onclick="removeAssessment('${a.id}')">✕</span></span>`).join("")}
+      <button class="small" onclick="addAssessment('quiz')">＋ 新增平時考</button>
+    </div>
+    <div class="section-label">定期評量</div>
+    <div class="chip-row">
+      ${exams.map(a=>`<span class="chip">${escapeHtml(a.name)}<span class="x" onclick="removeAssessment('${a.id}')">✕</span></span>`).join("")}
+      <button class="small" onclick="addAssessment('exam')">＋ 新增定期評量</button>
+    </div>
+    ${c.students.length ? `
+    <table style="margin-top:14px;">
+      <thead>
+        <tr>
+          <th class="num">座號</th><th>姓名</th>
+          ${quizzes.map(a=>`<th class="num">${escapeHtml(a.name)}</th>`).join("")}
+          ${exams.map(a=>`<th class="num">${escapeHtml(a.name)}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${[...c.students].sort((a,b)=>a.seatNo-b.seatNo).map(s=>`
+          <tr>
+            <td class="num">${s.seatNo}</td>
+            <td>${escapeHtml(s.name)}</td>
+            ${quizzes.map(a=>`<td class="num"><input class="cell-input" type="number" value="${s.marks&&s.marks[a.id]!==undefined?s.marks[a.id]:''}" onchange="setMark('${s.id}','${a.id}',this.value)"></td>`).join("")}
+            ${exams.map(a=>`<td class="num"><input class="cell-input" type="number" value="${s.marks&&s.marks[a.id]!==undefined?s.marks[a.id]:''}" onchange="setMark('${s.id}','${a.id}',this.value)"></td>`).join("")}
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>` : `<div class="empty">這個班級還沒有學生，請先到「學生名單」新增。</div>`}
+  `;
+}
+
+function renderIo(panel, c){
+  panel.innerHTML = `
+    <div class="io-box">
+      <h3>匯出 Excel 備份</h3>
+      <p class="hint" style="margin-top:0;">會將目前所有班級的學生名單、目前分數、平時考、定期評量與點名紀錄，整理成一份 Excel 檔案下載到您的電腦。</p>
+      <button class="btn seal" onclick="exportExcel()">下載 Excel 備份</button>
+    </div>
+    <div class="io-box">
+      <h3>匯入 Excel 備份</h3>
+      <p class="hint" style="margin-top:0;">請選擇先前由本系統匯出的 Excel 檔案。系統會依「班級名稱」自動比對，新增或更新學生資料（不會刪除既有學生）。</p>
+      <input class="file-input" type="file" accept=".xlsx,.xls" onchange="importExcel(this)">
+      <div id="ioMsg"></div>
+    </div>
+  `;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+
+/* ================= 啟動 ================= */
+renderAll();
+loadFromCloud().then(renderAll);
+</script>
+</body>
+</html>
