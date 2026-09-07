@@ -310,23 +310,46 @@ function deleteStudent(sid){
 }
 function bumpScore(sid, delta){
   const c = currentClass(); if(!c) return;
+  if(c.scoreLocked){ alert("成績目前已鎖定，請先解鎖再修改。"); return; }
   const s = c.students.find(s=>s.id===sid); if(!s) return;
   s.score = (s.score||0) + delta;
   save(); renderView();
 }
 function setScore(sid, val){
   const c = currentClass(); if(!c) return;
+  if(c.scoreLocked){ alert("成績目前已鎖定，請先解鎖再修改。"); renderView(); return; }
   const s = c.students.find(s=>s.id===sid); if(!s) return;
   s.score = Number(val)||0;
   save();
 }
 function bulkAdjust(){
   const c = currentClass(); if(!c || !c.students.length) return;
+  if(c.scoreLocked){ alert("成績目前已鎖定，請先解鎖再修改。"); return; }
   const v = prompt("請輸入要為全班加減的分數（例如 1 或 -1）","1");
   if(v===null) return;
   const delta = Number(v); if(Number.isNaN(delta)) return;
   c.students.forEach(s=> s.score = (s.score||0)+delta );
   save(); renderView();
+}
+function toggleScoreLock(){
+  const c = currentClass(); if(!c) return;
+  if(!c.scoreLocked){
+    const pw = prompt("要為這個班級的成績上鎖嗎？\n可以順便設定一組解鎖密碼（避免學生自己解鎖），不設定就直接留空按確定。", "");
+    if(pw===null) return;
+    c.scoreLocked = true;
+    c.scoreLockPassword = pw || "";
+    save(); renderView();
+  } else {
+    if(c.scoreLockPassword){
+      const pw = prompt("請輸入解鎖密碼：");
+      if(pw===null) return;
+      if(pw !== c.scoreLockPassword){ alert("密碼不正確。"); return; }
+    } else {
+      if(!confirm("確定要解鎖成績嗎？")) return;
+    }
+    c.scoreLocked = false;
+    save(); renderView();
+  }
 }
 function setName(sid,val){
   const c = currentClass(); if(!c) return;
@@ -370,10 +393,15 @@ function makeGroups(){
 function addAssessment(type){
   const c = currentClass(); if(!c) return;
   const label = type==="quiz" ? "平時考" : "定期評量";
+  const date = prompt(`這次${label}是哪一天上課的紀錄？(YYYY-MM-DD)`, todayStr());
+  if(date===null) return;
   const name = prompt(`請輸入${label}名稱（例如：${type==="quiz"?"小考1":"第一次段考"}）`);
   if(!name) return;
-  c.assessments.push({ id:uid(), name, type });
+  c.assessments.push({ id:uid(), name, type, date: date || todayStr() });
   save(); renderView();
+}
+function sortByDate(list){
+  return [...list].sort((a,b)=> String(a.date||"").localeCompare(String(b.date||"")) || a.name.localeCompare(b.name));
 }
 function removeAssessment(aid){
   const c = currentClass(); if(!c) return;
@@ -384,6 +412,7 @@ function removeAssessment(aid){
 }
 function setMark(sid, aid, val){
   const c = currentClass(); if(!c) return;
+  if(c.scoreLocked){ alert("成績目前已鎖定，請先解鎖再修改。"); renderView(); return; }
   const s = c.students.find(s=>s.id===sid); if(!s) return;
   if(!s.marks) s.marks = {};
   s.marks[aid] = val === "" ? "" : Number(val);
@@ -397,17 +426,7 @@ function exportExcel(){
   if(!classes.length){ alert("目前沒有任何班級資料可以匯出。"); return; }
 
   classes.forEach(c=>{
-    const quizzes = c.assessments.filter(a=>a.type==="quiz");
-    const exams = c.assessments.filter(a=>a.type==="exam");
-    const header = ["座號","姓名","目前分數", ...quizzes.map(q=>"平時考｜"+q.name), ...exams.map(e=>"定期評量｜"+e.name)];
-    const rows = [header];
-    [...c.students].sort((a,b)=>a.seatNo-b.seatNo).forEach(s=>{
-      const row = [s.seatNo, s.name, s.score||0];
-      quizzes.forEach(q=> row.push(s.marks && s.marks[q.id] !== undefined ? s.marks[q.id] : ""));
-      exams.forEach(e=> row.push(s.marks && s.marks[e.id] !== undefined ? s.marks[e.id] : ""));
-      rows.push(row);
-    });
-    const ws1 = XLSX.utils.aoa_to_sheet(rows);
+    const ws1 = buildScoreSheet(c);
     XLSX.utils.book_append_sheet(wb, ws1, safeSheetName(c.name+"-成績"));
 
     const dates = Object.keys(c.attendance).sort();
@@ -427,6 +446,30 @@ function exportExcel(){
 
   const stamp = todayStr();
   XLSX.writeFile(wb, `教室隨行簿備份_${stamp}.xlsx`);
+}
+function assessmentHeaderLabel(a){
+  const typeLabel = a.type==="quiz" ? "平時考" : "定期評量";
+  return "｜"+typeLabel+"｜"+(a.date||"")+"｜"+a.name;
+}
+function buildScoreSheet(c){
+  const quizzes = sortByDate(c.assessments.filter(a=>a.type==="quiz"));
+  const exams = sortByDate(c.assessments.filter(a=>a.type==="exam"));
+  const header = ["座號","姓名","目前分數", ...quizzes.map(assessmentHeaderLabel), ...exams.map(assessmentHeaderLabel)];
+  const rows = [header];
+  [...c.students].sort((a,b)=>a.seatNo-b.seatNo).forEach(s=>{
+    const row = [s.seatNo, s.name, s.score||0];
+    quizzes.forEach(q=> row.push(s.marks && s.marks[q.id] !== undefined ? s.marks[q.id] : ""));
+    exams.forEach(e=> row.push(s.marks && s.marks[e.id] !== undefined ? s.marks[e.id] : ""));
+    rows.push(row);
+  });
+  return XLSX.utils.aoa_to_sheet(rows);
+}
+function exportClassScoresExcel(cid){
+  const c = state.classes[cid]; if(!c) return;
+  if(!c.students.length){ alert("這個班級還沒有學生資料可以匯出。"); return; }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildScoreSheet(c), safeSheetName(c.name+"-成績"));
+  XLSX.writeFile(wb, `${c.name}_成績_${todayStr()}.xlsx`);
 }
 function safeSheetName(name){ return name.replace(/[\\\/\?\*\[\]:]/g,"_").slice(0,31); }
 
@@ -458,11 +501,20 @@ function importExcel(input){
         if(isScoreSheet){
           const colDefs = header.slice(3).map(h=>{
             const parts = String(h).split("｜");
-            return parts.length===2 ? {label:parts[1], type: parts[0]==="平時考"?"quiz":"exam"} : {label:h, type:"quiz"};
+            // new format: ["", "平時考"|"定期評量", "YYYY-MM-DD", name]
+            if(parts.length===4){
+              return {label:parts[3], type: parts[1]==="平時考"?"quiz":"exam", date: parts[2]};
+            }
+            // old format: ["平時考"|"定期評量", name]
+            if(parts.length===2){
+              return {label:parts[1], type: parts[0]==="平時考"?"quiz":"exam", date: ""};
+            }
+            return {label:h, type:"quiz", date:""};
           });
           colDefs.forEach(def=>{
             let a = c.assessments.find(a=>a.name===def.label && a.type===def.type);
-            if(!a){ a = {id:uid(), name:def.label, type:def.type}; c.assessments.push(a); }
+            if(!a){ a = {id:uid(), name:def.label, type:def.type, date:def.date}; c.assessments.push(a); }
+            else if(def.date && !a.date){ a.date = def.date; }
             def.id = a.id;
           });
           for(let r=1;r<data.length;r++){
@@ -582,10 +634,12 @@ function renderView(){
 }
 
 function renderRoster(panel, c){
+  const locked = !!c.scoreLocked;
   panel.innerHTML = `
     <div class="toolbar">
       <button class="btn" onclick="addStudent()">＋ 新增學生</button>
-      <button class="btn ghost" onclick="bulkAdjust()">全班加減分</button>
+      <button class="btn ghost" onclick="bulkAdjust()" ${locked?"disabled":""}>全班加減分</button>
+      <button class="btn ${locked?"seal":"ghost"}" onclick="toggleScoreLock()">${locked?"🔒 成績已鎖定（點擊解鎖）":"🔓 鎖定成績"}</button>
     </div>
     ${c.students.length ? `
     <table>
@@ -595,10 +649,10 @@ function renderRoster(panel, c){
           <tr>
             <td class="num">${s.seatNo}</td>
             <td><input class="cell-input name-input" value="${escapeAttr(s.name)}" onchange="setName('${s.id}', this.value)"></td>
-            <td class="num"><input class="cell-input" type="number" value="${s.score||0}" onchange="setScore('${s.id}', this.value)"></td>
+            <td class="num"><input class="cell-input" type="number" value="${s.score||0}" onchange="setScore('${s.id}', this.value)" ${locked?"disabled":""}></td>
             <td class="num">
-              <button class="small plus" onclick="bumpScore('${s.id}',1)">＋1</button>
-              <button class="small minus" onclick="bumpScore('${s.id}',-1)">－1</button>
+              <button class="small plus" onclick="bumpScore('${s.id}',1)" ${locked?"disabled":""}>＋1</button>
+              <button class="small minus" onclick="bumpScore('${s.id}',-1)" ${locked?"disabled":""}>－1</button>
               <button class="small" onclick="deleteStudent('${s.id}')">刪除</button>
             </td>
           </tr>
@@ -671,26 +725,31 @@ function renderDraw(panel, c){
 }
 
 function renderScores(panel, c){
-  const quizzes = c.assessments.filter(a=>a.type==="quiz");
-  const exams = c.assessments.filter(a=>a.type==="exam");
+  const quizzes = sortByDate(c.assessments.filter(a=>a.type==="quiz"));
+  const exams = sortByDate(c.assessments.filter(a=>a.type==="exam"));
+  const locked = !!c.scoreLocked;
   panel.innerHTML = `
-    <div class="section-label">平時考</div>
+    <div class="toolbar">
+      <button class="btn seal" onclick="exportClassScoresExcel('${c.id}')">下載本班成績 Excel</button>
+      <button class="btn ${locked?"seal":"ghost"}" onclick="toggleScoreLock()">${locked?"🔒 成績已鎖定（點擊解鎖）":"🔓 鎖定成績"}</button>
+    </div>
+    <div class="section-label">平時考<span style="font-weight:400;color:var(--ink-soft);font-size:12px;">（依日期排列，代表每次上課的成績紀錄）</span></div>
     <div class="chip-row">
-      ${quizzes.map(a=>`<span class="chip">${escapeHtml(a.name)}<span class="x" onclick="removeAssessment('${a.id}')">✕</span></span>`).join("")}
-      <button class="small" onclick="addAssessment('quiz')">＋ 新增平時考</button>
+      ${quizzes.map(a=>`<span class="chip">${a.date?`<b>${escapeHtml(a.date)}</b> `:''}${escapeHtml(a.name)}<span class="x" onclick="removeAssessment('${a.id}')">✕</span></span>`).join("")}
+      <button class="small" onclick="addAssessment('quiz')" ${locked?"disabled":""}>＋ 新增平時考</button>
     </div>
     <div class="section-label">定期評量</div>
     <div class="chip-row">
-      ${exams.map(a=>`<span class="chip">${escapeHtml(a.name)}<span class="x" onclick="removeAssessment('${a.id}')">✕</span></span>`).join("")}
-      <button class="small" onclick="addAssessment('exam')">＋ 新增定期評量</button>
+      ${exams.map(a=>`<span class="chip">${a.date?`<b>${escapeHtml(a.date)}</b> `:''}${escapeHtml(a.name)}<span class="x" onclick="removeAssessment('${a.id}')">✕</span></span>`).join("")}
+      <button class="small" onclick="addAssessment('exam')" ${locked?"disabled":""}>＋ 新增定期評量</button>
     </div>
     ${c.students.length ? `
     <table style="margin-top:14px;">
       <thead>
         <tr>
           <th class="num">座號</th><th>姓名</th>
-          ${quizzes.map(a=>`<th class="num">${escapeHtml(a.name)}</th>`).join("")}
-          ${exams.map(a=>`<th class="num">${escapeHtml(a.name)}</th>`).join("")}
+          ${quizzes.map(a=>`<th class="num">${a.date?`${escapeHtml(a.date)}<br>`:''}${escapeHtml(a.name)}</th>`).join("")}
+          ${exams.map(a=>`<th class="num">${a.date?`${escapeHtml(a.date)}<br>`:''}${escapeHtml(a.name)}</th>`).join("")}
         </tr>
       </thead>
       <tbody>
@@ -698,8 +757,8 @@ function renderScores(panel, c){
           <tr>
             <td class="num">${s.seatNo}</td>
             <td>${escapeHtml(s.name)}</td>
-            ${quizzes.map(a=>`<td class="num"><input class="cell-input" type="number" value="${s.marks&&s.marks[a.id]!==undefined?s.marks[a.id]:''}" onchange="setMark('${s.id}','${a.id}',this.value)"></td>`).join("")}
-            ${exams.map(a=>`<td class="num"><input class="cell-input" type="number" value="${s.marks&&s.marks[a.id]!==undefined?s.marks[a.id]:''}" onchange="setMark('${s.id}','${a.id}',this.value)"></td>`).join("")}
+            ${quizzes.map(a=>`<td class="num"><input class="cell-input" type="number" value="${s.marks&&s.marks[a.id]!==undefined?s.marks[a.id]:''}" onchange="setMark('${s.id}','${a.id}',this.value)" ${locked?"disabled":""}></td>`).join("")}
+            ${exams.map(a=>`<td class="num"><input class="cell-input" type="number" value="${s.marks&&s.marks[a.id]!==undefined?s.marks[a.id]:''}" onchange="setMark('${s.id}','${a.id}',this.value)" ${locked?"disabled":""}></td>`).join("")}
           </tr>
         `).join("")}
       </tbody>
