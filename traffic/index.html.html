@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>虎山國小｜交通安全小學堂</title>
+<style>
+:root{--navy:#24415c;--blue:#67c5e8;--green:#7bcf9b;--yellow:#ffd66b;--pink:#ff9ca8;--cream:#fff9ed;--ink:#30465b}
+*{box-sizing:border-box}body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:var(--ink);background:linear-gradient(180deg,#dff6ff,#f8fff0);min-height:100vh}
+header{padding:22px 16px 12px;text-align:center}.logo{font-size:clamp(30px,5vw,48px);font-weight:1000;color:#24618b;text-shadow:2px 3px #fff}.subtitle{font-size:16px;font-weight:700}
+.wrap{max-width:1050px;margin:auto;padding:12px 16px 40px}.panel{background:#ffffffed;border:4px solid #fff;border-radius:26px;box-shadow:0 8px 0 #c8e6e8;padding:22px;margin:14px 0}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:center}.hero-art{font-size:clamp(70px,12vw,120px);text-align:center;background:#eaf9ff;border-radius:24px;padding:15px}
+h1,h2,h3{margin:0 0 12px;color:#24618b}p{line-height:1.7}.btn{border:0;border-radius:16px;padding:13px 20px;font-size:17px;font-weight:900;cursor:pointer;background:var(--yellow);color:#624a16;box-shadow:0 4px 0 #e4b94b;transition:.12s}.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(2px);box-shadow:none}.btn.blue{background:var(--blue);box-shadow:0 4px 0 #3999bd;color:#104a65}.btn.green{background:var(--green);box-shadow:0 4px 0 #4eaa72;color:#174d2b}.btn.pink{background:var(--pink);box-shadow:0 4px 0 #df7180;color:#6b2632}.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.namebox{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}input{border:2px solid #b9dce8;border-radius:12px;padding:12px;font-size:16px;min-width:180px}
+.stats{display:flex;gap:10px;flex-wrap:wrap}.stat{background:#f0f9ff;border-radius:14px;padding:9px 14px;font-weight:900}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.stage{border:3px solid #e2f1f5;border-radius:20px;padding:16px;background:#fff;display:flex;gap:12px;align-items:center}.stage .emoji{font-size:42px}.stage p{margin:3px 0;font-size:14px}.stage button{margin-left:auto;white-space:nowrap}
+.progress{height:14px;background:#e5eff2;border-radius:99px;overflow:hidden;margin:12px 0}.bar{height:100%;background:linear-gradient(90deg,#78d5a0,#62c5e8);width:0;transition:.3s}
+.question{font-size:21px;font-weight:900;line-height:1.5;margin:12px 0}.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}.answer{border:3px solid #dcecf1;background:#f8fcff;border-radius:16px;padding:14px;text-align:left;font-size:17px;font-weight:800;cursor:pointer;color:var(--ink)}.answer:hover{border-color:#69c6e6;background:#effaff}.answer:disabled{cursor:default;opacity:.8}.feedback{padding:14px;border-radius:15px;margin-top:14px;font-weight:800;line-height:1.6}.good{background:#e7f9eb;color:#22643a}.bad{background:#fff0ed;color:#8d3d30}
+.scene{background:linear-gradient(#dff6ff 0 60%,#a9dfa7 60%);border-radius:20px;padding:18px;text-align:center;font-size:clamp(42px,8vw,75px);margin:12px 0}.scene small{display:block;font-size:15px;font-weight:800}
+.hidden{display:none!important}.center{text-align:center}.timer{font-size:24px;font-weight:1000;color:#d76b38}.rank{width:100%;border-collapse:collapse}.rank td,.rank th{padding:9px;border-bottom:1px solid #e4edf0;text-align:left}.rank th{color:#24618b}
+footer{text-align:center;padding:15px;color:#57758a;font-size:13px}
+@media(max-width:700px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.answers{grid-template-columns:1fr}.stage{flex-wrap:wrap}.stage button{margin-left:0}.panel{padding:17px}}
+canvas{display:block}details{margin:8px 0}summary{cursor:pointer;font-weight:800;padding:6px 0}.ctl{min-width:56px}#wSig{background:#fff6d6}.rank tr[data-n]:hover{background:#effaff}
+</style>
+</head>
+<body>
+<header><div class="logo">🚦 交通安全小學堂</div><div class="subtitle">虎山國小｜小小交通安全隊長・闖關大冒險！</div></header>
+<main class="wrap">
+<section id="home" class="panel">
+ <div class="hero"><div><h1>準備好成為交通安全小達人了嗎？</h1>
+ <p>一起完成四大任務：認識號誌、安心過馬路、安全騎乘，還要接受限時挑戰！答對可以獲得星星，答錯也別擔心，看看解析就能學會。</p>
+ <div class="namebox"><input id="klass" maxlength="12" placeholder="班級（例：三年甲班）"><input id="player" maxlength="12" placeholder="學生姓名（可加座號）"><button class="btn green" onclick="startGame()">開始冒險！</button><button class="btn blue" onclick="openTeacher()">👩‍🏫 教師模式</button></div>
+ <div id="homeMsg" style="color:#c0392b;font-weight:800;margin-top:8px"></div><p style="font-size:13px;color:#678">適合國小三、四年級｜可用電腦、平板或手機遊玩</p></div><div class="hero-art">🧒🏻🚸🚲</div></div>
+</section>
+<section id="dashboard" class="panel hidden">
+ <div class="stats"><div class="stat">👤 <span id="playerName">小隊長</span></div><div class="stat">⭐ 星星：<span id="score">0</span></div><div class="stat">🏅 完成：<span id="done">0</span>/5</div></div>
+ <h2 style="margin-top:18px">選擇你的任務</h2><div class="progress"><div class="bar" id="overall"></div></div>
+ <div class="grid">
+  <div class="stage"><div class="emoji">🚦</div><div><h3>第一關：紅綠燈小達人</h3><p>認識交通號誌與燈號</p></div><button class="btn" onclick="openStage(0)">挑戰</button></div>
+  <div class="stage"><div class="emoji">🚶‍♀️</div><div><h3>第二關：安全過馬路</h3><p>停、看、聽，安全通行</p></div><button class="btn" onclick="openStage(1)">挑戰</button></div>
+  <div class="stage"><div class="emoji">🚲</div><div><h3>第三關：騎車安全王</h3><p>安全帽與自行車守則</p></div><button class="btn" onclick="openStage(2)">挑戰</button></div>
+  <div class="stage"><div class="emoji">🏆</div><div><h3>第四關：交通安全大挑戰</h3><p>情境題＋限時挑戰</p></div><button class="btn pink" onclick="openStage(3)">挑戰</button></div>
+  <div class="stage"><div class="emoji">🧒</div><div><h3>第五關：路口實境闖關</h3><p>親自操作過馬路，看號誌、看左右</p></div><button class="btn pink" onclick="openStage(4)">挑戰</button></div>
+ </div>
+ <div class="btnrow"><button class="btn blue" onclick="showLeaderboard()">🏆 班級排行榜</button><button class="btn" onclick="showBadges()">🎖️ 我的獎章</button><button class="btn" onclick="openTeacher()">👩‍🏫 教師模式</button><button class="btn pink" onclick="resetGame()">換人／回首頁</button></div>
+</section>
+<section id="game" class="panel hidden">
+ <div class="stats"><div class="stat" id="stageLabel">第一關</div><div class="stat">⭐ 本關：<span id="stageScore">0</span></div><div class="stat timer" id="timerBox">⏱️ <span id="timer">不限時</span></div></div>
+ <div class="progress"><div class="bar" id="stageProgress"></div></div>
+ <div id="scene" class="scene">🚦<small>看清楚情境，再選出最安全的做法！</small></div>
+ <div id="qCount" style="font-weight:900;color:#628096"></div><div class="question" id="question"></div>
+ <div class="answers" id="answers"></div><div id="feedback"></div>
+ <div class="btnrow"><button id="nextBtn" class="btn green hidden" onclick="nextQuestion()">下一題 ➜</button><button class="btn blue" onclick="backDashboard()">回任務地圖</button></div>
+</section>
+<section id="result" class="panel hidden center">
+ <div style="font-size:70px" id="resultEmoji">🎉</div><h2 id="resultTitle">任務完成！</h2><p id="resultText"></p><div class="stats" style="justify-content:center"><div class="stat">⭐ 本關得分：<span id="resultScore">0</span></div><div class="stat">🎯 正確題數：<span id="correctCount">0</span></div></div>
+ <div class="btnrow" style="justify-content:center"><button class="btn green" onclick="backDashboard()">回任務地圖</button><button class="btn" onclick="nextStage()">挑戰下一關</button></div>
+</section>
+<section id="leaderboard" class="panel hidden"><h2>🏆 班級排行榜 <small id="lbClass"></small></h2><p>星星會累積計算，成績保存在這台裝置的瀏覽器中。</p><table class="rank"><thead><tr><th>名次</th><th>隊長</th><th>星星</th><th>獎章</th></tr></thead><tbody id="rankRows"></tbody></table><div class="btnrow"><button class="btn blue" onclick="backDashboard()">返回</button><button class="btn green" onclick="exportSummary(klass)">📥 匯出本班成績 CSV</button></div></section>
+<section id="badges" class="panel hidden"><h2>🎖️ 我的獎章</h2><div id="badgeList" class="grid"></div><div class="btnrow"><button class="btn blue" onclick="backDashboard()">返回</button></div></section>
+<section id="walk" class="panel hidden"><div class="stats"><div class="stat">❤️ <span id="wLife">3</span></div><div class="stat">⭐ <span id="wStar">0</span></div><div class="stat">第 <span id="wRound">1</span>／3 次</div><div class="stat" id="wSig">🚦</div></div>
+<canvas id="cv" width="640" height="360" style="width:100%;border-radius:18px;margin:12px 0;touch-action:none"></canvas>
+<div class="feedback good" id="wMsg"></div>
+<div class="btnrow"><button class="btn ctl" data-k="L">⬅️</button><button class="btn ctl" data-k="U">⬆️</button><button class="btn ctl" data-k="D">⬇️</button><button class="btn ctl" data-k="R">➡️</button><button class="btn green ctl" onclick="lookLR()">👀 停看聽</button><button class="btn blue" onclick="backDashboard()">回任務地圖</button></div></section>
+<section id="teacher" class="panel hidden"><h2>👩‍🏫 教師管理模式</h2><div id="tLogin"><p>請輸入教師密碼：</p><div class="namebox"><input id="tPin" type="password" onkeydown="if(event.key==='Enter')tryPin()"><button class="btn green" onclick="tryPin()">進入</button><button class="btn blue" onclick="show('home')">返回</button></div><div id="tErr" style="color:#c0392b;font-weight:800;margin-top:8px"></div></div><div id="tMain" class="hidden"><p>選擇班級，點選學生可查看每次闖關的答題紀錄。成績保存在這台裝置的瀏覽器中。</p><p>班級：<select id="tClass" onchange="teacherView()" style="font-size:16px;padding:8px;border-radius:10px"></select></p><table class="rank"><thead><tr><th>班級</th><th>學生</th><th>星星</th><th>完成關卡</th><th>正確率</th><th>最近遊玩</th></tr></thead><tbody id="tRows"></tbody></table><div id="tDetail"></div><h3 style="margin-top:18px">❗ 最常答錯的題目</h3><ol id="tWrong"></ol><div class="btnrow"><button class="btn green" onclick="exportSummary($('tClass').value)">📥 成績總表 CSV</button><button class="btn" onclick="exportDetail($('tClass').value)">📥 作答明細 CSV</button><button class="btn pink" id="clrBtn" onclick="clearAll()">清除全部資料</button><button class="btn blue" onclick="show('home')">離開</button></div></div></section>
+</main><footer>虎山國小交通安全小學堂｜記得遵守交通規則，出門平安回家！</footer>
+<script>
+const stages=[
+ {name:"第一關：紅綠燈小達人",icon:"🚦",time:0,qs:[
+  ["行人號誌亮起綠色小人，代表什麼？",["可以確認安全後通行","站在原地不動","開始奔跑比賽","可以邊看手機邊走"],0,"綠色行人燈表示可以通行，但仍要注意轉彎車輛。","🚦"],
+  ["行人號誌亮起紅色小人，應該怎麼做？",["快跑過去","停在安全處等待","請同學拉著跑","走到車道中央"],1,"紅燈時要停下等待，不能闖紅燈。","🛑"],
+  ["看到閃爍的綠色行人燈，最適合怎麼做？",["立刻衝出去","慢慢拍照","不要急著起步；已在路口者儘速通過","和朋友玩追逐"],2,"閃綠燈表示通行時間快結束，尚未進入道路者應等待下一次綠燈。","🚸"],
+  ["騎車遇到紅燈時，應該？",["停在停止線後","騎到斑馬線上","看沒車就衝","按鈴請大家讓路"],0,"紅燈要停在停止線後，遵守號誌。","🚲"]
+ ]},
+ {name:"第二關：安全過馬路",icon:"🚶‍♀️",time:0,qs:[
+  ["過馬路前，正確的做法是？",["低頭看手機","停、看、聽，確認安全","閉眼快跑","跟著陌生人走"],1,"先停下來，左右察看並留意聲音，確認安全再通過。","🚶"],
+  ["有行人穿越道時，應該走哪裡？",["車多的地方","車輛中間","行人穿越道","停車場出口"],2,"應使用行人穿越道或行人設施，不任意穿越車道。","🚸"],
+  ["走到路口時，發現有車子要右轉，怎麼辦？",["和車子比快","停下確認車輛停讓，再通過","背對車子走","突然跑到車前"],1,"即使是綠燈，也要注意轉彎車，確認駕駛看見你並停讓。","🚗"],
+  ["沒有行人穿越道時，應該怎麼做？",["選擇視線良好、安全處，依規定通行","從停著的兩台車中間穿過","在彎道直接跑過","邊玩邊走"],0,"應選擇安全、視線良好的地點，並遵守當地行人通行規定。","👀"]
+ ]},
+ {name:"第三關：騎車安全王",icon:"🚲",time:0,qs:[
+  ["騎乘自行車前，最重要的裝備之一是？",["棒球帽","安全帽","耳機","太陽眼鏡就好"],1,"騎自行車應戴合格且正確配戴的安全帽。","⛑️"],
+  ["騎自行車時，哪個行為最安全？",["雙手放開把手","一邊騎一邊看手機","遵守標誌標線並注意路況","和同學並排聊天"],2,"騎乘時專心看路、穩定操控，並遵守交通規則。","🚲"],
+  ["晚上騎自行車，怎樣比較容易被看見？",["穿深色衣服又不開燈","裝設前燈、後燈及反光裝置","躲在大車旁","關掉所有燈"],1,"夜間要使用車燈與反光裝置，讓其他用路人清楚看見。","🌙"],
+  ["騎自行車要轉彎時，應該？",["突然轉彎","先減速、觀察並以手勢示意","閉眼轉過去","請朋友推車"],1,"轉彎前先減速、確認周遭安全，並清楚示意方向。","↪️"]
+ ]},
+ {name:"第四關：交通安全大挑戰",icon:"🏆",time:45,qs:[
+  ["你和同學趕著上學，校門口車很多，應該？",["從車縫中穿過","走人行道或安全通道，不追逐","請同學幫忙擋車","直接跑過馬路"],1,"上學不搶快，走安全通道並留意車輛。","🏫"],
+  ["下車後要穿越道路，應該從哪裡通過？",["車頭或車尾旁立刻衝出","先走到安全處，確認視線與車流後依規定通行","在車子中間鑽過","請司機按喇叭"],1,"車輛會遮住視線，離開車輛遮蔽處後再確認安全通行。","🚌"],
+  ["搭乘汽車時，正確的安全行為是？",["坐好並繫妥安全帶","把頭手伸出窗外","在車內走來走去","催促駕駛超速"],0,"乘車要坐好、繫安全帶，不把身體伸出車外。","🚗"],
+  ["雨天路面濕滑，走路或騎車時要？",["加快速度","保持注意、減速並留意打滑","撐傘遮住視線","在水窪旁嬉戲"],1,"雨天視線與抓地力較差，要放慢速度並提高警覺。","🌧️"],
+  ["同學說『沒有車就可以闖紅燈』，你會？",["同意他","提醒他紅燈停、遵守號誌","跟著一起闖","站在路中間聊天"],1,"道路安全不能只靠自己判斷有沒有車，必須遵守號誌。","🚦"]
+ ]}
+];
+let player="小隊長",score=0,completed=[false,false,false,false],stageIndex=0,qIndex=0,stagePoints=0,correct=0,answered=false,timeLeft=0,timerId=null,leaderboard=[];
+const $=id=>document.getElementById(id);
+function show(id){["home","dashboard","game","result","leaderboard","badges","walk","teacher"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function startGame(){const n=$("player").value.trim(),k=$("klass").value.trim();if(!k||!n){$("homeMsg").textContent="請先輸入班級和姓名喔！";return}$("homeMsg").textContent="";player=n;klass=k;pid=k+"|"+n;try{localStorage.setItem("tsClass",k)}catch(e){}$("playerName").textContent=k+" "+n;const o=stats().find(x=>x.id===pid);score=o?o.stars:0;completed=[0,1,2,3,4].map(i=>!!o&&o.st.has(i));show("dashboard");updateStats()}
+function updateStats(){$("score").textContent=score;$("done").textContent=completed.filter(Boolean).length;$("overall").style.width=(completed.filter(Boolean).length*20)+"%"}
+function openStage(i){if(i==4)return startWalk();cur=[];over=false;stageIndex=i;qIndex=0;stagePoints=0;correct=0;show("game");$("stageLabel").textContent=stages[i].name;$("stageScore").textContent=0;if(stages[i].time){timeLeft=stages[i].time;$("timer").textContent=timeLeft+"秒";timerId=setInterval(()=>{timeLeft--;$("timer").textContent=timeLeft+"秒";if(timeLeft<=0){clearInterval(timerId);timeUp()}},1000)}else $("timer").textContent="不限時";renderQuestion()}
+function renderQuestion(){answered=false;const q=stages[stageIndex].qs[qIndex];$("scene").innerHTML=q[4]+'<small>觀察情境，選出最安全的做法！</small>';$("qCount").textContent=`第 ${qIndex+1} 題／共 ${stages[stageIndex].qs.length} 題`;$("question").textContent=q[0];$("answers").innerHTML="";q[1].forEach((a,i)=>{let b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+i)+"．"+a;b.onclick=()=>choose(i);$("answers").appendChild(b)});$("feedback").innerHTML="";$("nextBtn").classList.add("hidden");$("stageProgress").style.width=(qIndex/stages[stageIndex].qs.length*100)+"%"}
+function choose(i){if(answered)return;answered=true;let q=stages[stageIndex].qs[qIndex],ok=i===q[2];cur.push([q[0],q[1][i],ok?1:0]);[...$("answers").children].forEach((b,j)=>{b.disabled=true;if(j===q[2])b.style.borderColor="#62bd7c";if(j===i&&!ok)b.style.borderColor="#e78b7f"});if(ok){stagePoints+=10;score+=10;correct++;$("feedback").innerHTML='<div class="feedback good">🎉 答對了！ +10 顆星<br>'+q[3]+'</div>'}else{$("feedback").innerHTML='<div class="feedback bad">再接再厲！正確答案是「'+q[1][q[2]]+'」。<br>'+q[3]+'</div>'}$("stageScore").textContent=stagePoints;$("score").textContent=score;$("nextBtn").textContent=qIndex===stages[stageIndex].qs.length-1?"完成本關 🏁":"下一題 ➜";$("nextBtn").classList.remove("hidden")}
+function nextQuestion(){if(!answered)return;if(!over&&qIndex<stages[stageIndex].qs.length-1){qIndex++;renderQuestion()}else finishStage()}
+function timeUp(){if(!answered){$("feedback").innerHTML='<div class="feedback bad">⏰ 時間到！我們看看這一題的解答吧。</div>';[...$("answers").children].forEach(b=>b.disabled=true);answered=true;over=true;cur.push([stages[stageIndex].qs[qIndex][0],"(時間到)",0]);$("nextBtn").classList.remove("hidden");$("nextBtn").textContent="查看結果";} }
+function finishStage(){if(timerId)clearInterval(timerId);const b0=badges(pid).filter(x=>x.ok).length;completed[stageIndex]=true;let total=stages[stageIndex].qs.length;addRec(stageIndex,stagePoints,correct,total,cur);const nb=badges(pid).filter(x=>x.ok).length-b0;updateStats();$("resultEmoji").textContent=correct===total?"🏆":"🌟";$("resultTitle").textContent=correct===total?"完美通關！":"任務完成！";$("resultText").textContent=`${player}，你完成了「${stages[stageIndex].name}」！`+(nb>0?"🎖️ 解鎖了新獎章！":"記得把學到的安全觀念用在生活中。");$("resultScore").textContent=stagePoints;$("correctCount").textContent=correct+"／"+total;show("result")}
+function nextStage(){let n=completed.findIndex((v,i)=>!v&&i>stageIndex);if(n<0)n=completed.findIndex(v=>!v);if(n<0){backDashboard();showBadges()}else openStage(n)}
+function backDashboard(){walkStop();if(timerId)clearInterval(timerId);show("dashboard");updateStats()}
+function saveScore(){try{let a=JSON.parse(localStorage.getItem("trafficSafetyScores")||"[]");a.push({name:player,score:score,date:new Date().toLocaleDateString()});a.sort((x,y)=>y.score-x.score);localStorage.setItem("trafficSafetyScores",JSON.stringify(a.slice(0,20)))}catch(e){}}
+function showLeaderboard(){const a=stats().filter(r=>r.k===klass);$("rankRows").innerHTML=a.length?a.map((r,i)=>`<tr${r.n===player?' style="background:#fff6d6"':''}><td>${["🥇","🥈","🥉"][i]||i+1}</td><td>${escapeHtml(r.n)}</td><td>⭐ ${r.stars}</td><td>🎖️ ${badges(r.id).filter(x=>x.ok).length}/8</td></tr>`).join(""):'<tr><td colspan="4">還沒有成績，快來挑戰吧！</td></tr>';$("lbClass").textContent="｜"+klass;show("leaderboard")}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showBadges(){$("badgeList").innerHTML=badges(pid).map(b=>`<div class="stage"><div class="emoji">${b.ok?"🌟":"🔒"}</div><div><h3>${b.x}</h3><p>${b.ok?"已解鎖，做得好！":b.h+"即可解鎖"}</p></div></div>`).join("");show("badges")}
+function resetGame(){backDashboard();show("home")}
+
+const PIN="1234",DB="trafficSafetyV2",SN=["紅綠燈","安全過馬路","騎車安全","大挑戰","路口實境"];
+let recs=[],cur=[],over=false,klass="",pid="",clr=0;
+try{recs=JSON.parse(localStorage.getItem(DB)||"[]")}catch(e){}
+function save(){try{localStorage.setItem(DB,JSON.stringify(recs.slice(-500)))}catch(e){}}
+function addRec(s,p,c,t,a){recs.push({k:klass,n:player,s,p,c,t,d:new Date().toLocaleString("sv-SE"),a});save()}
+function stats(){const m={};recs.forEach(r=>{const id=(r.k||"")+"|"+r.n,o=m[id]||(m[id]={id,k:r.k||"",n:r.n,stars:0,st:new Set(),c:0,t:0,last:""});o.stars+=r.p;o.st.add(r.s);o.c+=r.c;o.t+=r.t;o.last=r.d});return Object.values(m).sort((a,b)=>b.stars-a.stars)}
+function badges(n){const o=stats().find(x=>x.id===n)||{stars:0,st:new Set()};return["🚦 號誌觀察員","🚶 安全過路高手","🚲 自行車守護者","🏆 交通安全小達人","🚸 路口勇者"].map((x,i)=>({x,ok:o.st.has(i),h:"完成對應關卡"})).concat([50,100,200].map((k,i)=>({x:["⭐ 閃亮新星","🌟 星星達人","👑 傳奇隊長"][i],ok:o.stars>=k,h:"累積 "+k+" 顆星"})))}
+const q=v=>{let s=String(v);if(/^[=+\-@]/.test(s))s="'"+s;return'"'+s.replace(/"/g,'""')+'"'};
+function dl(n,rows){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=n+"_"+new Date().toLocaleDateString("sv-SE")+".csv";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),999)}
+function exportSummary(c){const all=c===undefined||c==="*";dl("交通安全_"+(all?"全部班級":c)+"_成績總表",[["名次","班級","姓名","累積星星","完成關卡","獎章數","答題正確率","最近遊玩"]].concat(stats().filter(r=>all||r.k===c).map((r,i)=>[i+1,r.k,r.n,r.stars,r.st.size+"/5",badges(r.id).filter(x=>x.ok).length,r.t?Math.round(r.c/r.t*100)+"%":"-",r.last])))}
+function exportDetail(c){const all=c===undefined||c==="*",R=[["班級","姓名","關卡","時間","本次星星","題號","題目／事件","作答","結果"]];recs.filter(r=>all||(r.k||"")===c).forEach(r=>r.a.forEach((x,i)=>R.push([r.k||"",r.n,SN[r.s],r.d,r.p,i+1,x[0],x[1],x[2]?"正確":"錯誤"])));dl("交通安全_"+(all?"全部班級":c)+"_作答明細",R)}
+function openTeacher(){show("teacher");$("tLogin").classList.remove("hidden");$("tMain").classList.add("hidden");$("tPin").value="";$("tErr").textContent="";$("tPin").focus()}
+function tryPin(){if($("tPin").value!==PIN){$("tErr").textContent="密碼不正確，請再試一次";return}$("tLogin").classList.add("hidden");$("tMain").classList.remove("hidden");teacherView()}
+function teacherView(){const sel=$("tClass").value||"*",ks=[...new Set(recs.map(r=>r.k||""))].sort(),f=r=>sel==="*"||(r.k||"")===sel;
+$("tClass").innerHTML='<option value="*">全部班級</option>'+ks.map(k=>`<option value="${escapeHtml(k)}"${k===sel?" selected":""}>${escapeHtml(k||"（未填班級）")}</option>`).join("");
+const a=stats().filter(f),w={};recs.filter(f).forEach(r=>r.a.forEach(x=>{if(!x[2])w[x[0]]=(w[x[0]]||0)+1}));
+$("tRows").innerHTML=a.length?a.map(r=>`<tr data-id="${escapeHtml(r.id)}" onclick="tDetail(this.dataset.id)" style="cursor:pointer"><td>${escapeHtml(r.k)}</td><td>${escapeHtml(r.n)}</td><td>⭐ ${r.stars}</td><td>${r.st.size}/5</td><td>${r.t?Math.round(r.c/r.t*100)+"%":"-"}</td><td>${r.last}</td></tr>`).join(""):'<tr><td colspan="6">目前沒有學生成績</td></tr>';
+$("tWrong").innerHTML=Object.entries(w).sort((x,y)=>y[1]-x[1]).slice(0,5).map(([k,v])=>`<li>${escapeHtml(k)}（${v} 次）</li>`).join("")||"<li>目前沒有答錯紀錄</li>";$("tDetail").innerHTML=""}
+function tDetail(id){$("tDetail").innerHTML="<h3>"+escapeHtml(id.replace("|"," "))+" 的闖關紀錄</h3>"+recs.filter(r=>(r.k||"")+"|"+r.n===id).reverse().map(r=>`<details><summary>${SN[r.s]}｜${r.d}｜⭐${r.p}｜${r.c}/${r.t}</summary>${r.a.map(x=>`<div class="feedback ${x[2]?"good":"bad"}">${x[2]?"✔":"✘"} ${escapeHtml(x[0])}<br>作答：${escapeHtml(x[1])}</div>`).join("")}</details>`).join("")}
+function clearAll(){const b=$("clrBtn");if(!clr){clr=1;b.textContent="⚠️ 再按一次確認刪除";setTimeout(()=>{clr=0;b.textContent="清除全部資料"},4000)}else{clr=0;recs=[];save();b.textContent="清除全部資料";teacherView()}}
+/* 路口實境 */
+let W=null,keys={},raf=0;const CW=640,CH=360,BX=282,BW=76,PH=[["red",420],["green",300],["flash",150]],cv=$("cv"),g=cv.getContext("2d");
+const wm=(t,ok)=>{$("wMsg").className="feedback "+(ok?"good":"bad");$("wMsg").textContent=t};
+function rst(){W.x=BX+BW/2;W.y=325;W.ent=null;W.jay=false;W.look=false;W.lk=0}
+function startWalk(demo){stageIndex=4;W={demo:!!demo,life:3,stars:0,round:1,ph:0,t:0,cars:[[],[]],log:[],f:0,cd:[30,80],hit:0};rst();document.querySelectorAll(".ctl").forEach(b=>b.classList.toggle("hidden",!!demo));$("wLife").textContent=3;$("wStar").textContent=0;$("wRound").textContent=1;wm(demo?"🎬 看看紅燈、綠燈時，車子和行人怎麼動！":"看號誌、等車子停好，再走斑馬線到對面！（方向鍵／WASD 或下方按鈕）",1);show("walk");cancelAnimationFrame(raf);loop()}
+function walkStop(){cancelAnimationFrame(raf);W=null;keys={}}
+function lookLR(){if(W&&!W.demo){W.look=true;W.lk=90;wm("👀 左看、右看、再左看：確認車子都停了才走！",1)}}
+function loop(){if(!W)return;step();draw();raf=requestAnimationFrame(loop)}
+function step(){const w=W;w.f++;if(++w.t>=PH[w.ph][1]){w.t=0;w.ph=(w.ph+1)%3}const go=w.ph==0;
+[-1,1].forEach((d,li)=>{let L=w.cars[li];if(--w.cd[li]<=0){const e=L[L.length-1];if(!e||(d<0?e.x<CW-150:e.x>80)){L.push({x:d<0?CW+10:-80,w:70,v:2.4,run:Math.random()<.17,col:["#e85d75","#4aa3df","#f2b632","#6fc37b"][Math.random()*4|0]});w.cd[li]=70+Math.random()*110|0}else w.cd[li]=15}
+L.sort((a,b)=>(b.x-a.x)*d);L.forEach((c,i)=>{let T=c.run?3.4:2.6;if(!go&&!c.run){const t=d<0?c.x-372:268-(c.x+c.w);if(t>=-1&&t<110)T=Math.min(T,Math.max(0,t)*.07)}
+const l=L[i-1];if(l){const p=d<0?c.x-(l.x+l.w):l.x-(c.x+c.w);if(p<20)T=Math.min(T,p<8?0:l.v)}c.v+=(T-c.v)*.12;c.x+=c.v*d});w.cars[li]=L.filter(c=>c.x>-120&&c.x<CW+120)});
+if(w.hit>0)w.hit--;if(w.demo)return;
+const k=keys,s=2.1;w.x=Math.max(14,Math.min(CW-14,w.x+((k.R?1:0)-(k.L?1:0))*s));w.y=Math.max(40,Math.min(335,w.y+((k.D?1:0)-(k.U?1:0))*s));
+if(w.y<262&&!w.ent)w.ent={ph:w.ph,band:w.x>BX-4&&w.x<BX+BW+4};
+if(w.y>=270&&w.ent){w.ent=null;w.jay=false}
+if(w.ent&&w.y>95&&w.y<255&&(w.x<BX-6||w.x>BX+BW+6))w.jay=true;
+for(let li=0;li<2;li++)for(const c of w.cars[li]){const y=li?218:132;if(w.x+10>c.x&&w.x-10<c.x+c.w&&w.y+14>y-17&&w.y-14<y+17){w.life--;w.hit=25;w.log.push(["第"+w.round+"次過馬路","被車撞到（沒有看清楚左右來車）",0]);$("wLife").textContent=Math.max(0,w.life);wm("💥 被車撞到了！就算是綠燈，也要看左右來車、等車停好再走。",0);rst();if(w.life<=0)finishWalk();return}}
+if(w.y<=85&&w.ent){const e=w.ent,safe=e.ph==1&&!w.jay&&e.band,p=safe?10+(w.look?5:0):0,why=[e.ph==0?"紅燈時就走":e.ph==2?"閃綠燈才起步":"",w.jay||!e.band?"沒走斑馬線":""].filter(Boolean).join("、");
+w.stars+=p;w.log.push(["第"+w.round+"次過馬路",safe?"綠燈、走斑馬線"+(w.look?"、有停看聽":""):why,safe?1:0]);$("wStar").textContent=w.stars;
+wm(safe?"🎉 安全過馬路！ +"+p+" 顆星"+(w.look?"（含停看聽加分）":"，下次記得先按「停看聽」"):"過去了，但是"+why+"，很危險喔！這次沒有星星。",safe);
+if(++w.round>3)finishWalk();else{$("wRound").textContent=w.round;rst()}}}
+function finishWalk(){const w=W,ok=w.log.filter(x=>x[2]).length,b0=badges(pid).filter(x=>x.ok).length;completed[4]=true;score+=w.stars;addRec(4,w.stars,ok,3,w.log);const nb=badges(pid).filter(x=>x.ok).length-b0;walkStop();updateStats();
+$("resultEmoji").textContent=ok==3?"🏆":"🚸";$("resultTitle").textContent=ok==3?"完美過馬路！":"任務完成！";$("resultText").textContent=`${player}，你安全通過了 ${ok} 次馬路。`+(nb>0?"🎖️ 解鎖了新獎章！":"");$("resultScore").textContent=w.stars;$("correctCount").textContent=ok+"／3";show("result")}
+function draw(){const w=W;g.clearRect(0,0,CW,CH);g.fillStyle="#cfe9c0";g.fillRect(0,0,CW,90);g.fillStyle="#e9e2cf";g.fillRect(0,260,CW,100);g.fillStyle="#4b5563";g.fillRect(0,90,CW,170);
+g.fillStyle="#f5d04c";for(let x=0;x<CW;x+=40)g.fillRect(x,173,22,4);g.fillStyle="#fff";for(let y=96;y<256;y+=16)g.fillRect(BX,y,BW,9);g.fillRect(268,90,4,170);g.fillRect(372,90,4,170);
+w.cars.forEach((L,li)=>L.forEach(c=>{const y=li?218:132;g.fillStyle=c.col;g.fillRect(c.x,y-17,c.w,34);g.fillStyle="#cfeaff";g.fillRect(li?c.x+44:c.x+8,y-12,18,24);g.fillStyle="#fff3a0";g.fillRect(li?c.x+c.w-4:c.x,y-13,4,8);g.fillRect(li?c.x+c.w-4:c.x,y+5,4,8)}));
+const ph=PH[w.ph][0],lit=ph=="red"?"r":(ph=="green"||w.f%30<15)?"g":"";
+[[236,268],[392,40]].forEach(([x,y])=>{g.fillStyle="#222";g.fillRect(x,y,20,44);g.fillStyle=lit=="r"?"#ff4d4d":"#5a2a2a";g.beginPath();g.arc(x+10,y+11,7,0,7);g.fill();g.fillStyle=lit=="g"?"#4dff88":"#1f4a2e";g.beginPath();g.arc(x+10,y+33,7,0,7);g.fill()});
+const t=ph=="red"?"🔴 紅燈：請等待":ph=="green"?"🟢 綠燈：看左右再走":"🟡 閃綠燈：不要起步";if(w.ls!==t){w.ls=t;$("wSig").textContent=t}
+g.textAlign="center";g.font="30px serif";
+if(w.demo){if(ph!="red")g.fillText("🚶",BX+BW/2,300-(ph=="green"?w.t:w.t+300)*.55)}
+else{g.fillText("🧒",w.x,w.y+10);if(w.lk>0){w.lk--;g.font="24px serif";g.fillText("👀⬅️",w.x-48,w.y-22);g.fillText("➡️👀",w.x+48,w.y-22)}}
+if(w.hit>0){g.fillStyle="rgba(255,60,60,"+w.hit/50+")";g.fillRect(0,0,CW,CH)}}
+const KM={ArrowLeft:"L",a:"L",ArrowRight:"R",d:"R",ArrowUp:"U",w:"U",ArrowDown:"D",s:"D"};
+addEventListener("keydown",e=>{if(W&&KM[e.key]){keys[KM[e.key]]=1;e.preventDefault()}});addEventListener("keyup",e=>{if(KM[e.key])keys[KM[e.key]]=0});
+document.querySelectorAll("[data-k]").forEach(b=>{const on=v=>e=>{keys[b.dataset.k]=v;e.preventDefault()};b.onpointerdown=on(1);b.onpointerup=b.onpointerleave=b.onpointercancel=on(0)});
+try{$("klass").value=localStorage.getItem("tsClass")||""}catch(e){}
+</script>
+</body></html>
