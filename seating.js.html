@@ -1,10 +1,8 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=claude:viewport-fit-sides content=cover><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}</style><style>.md-table{overflow-x:auto}@media print{.md-table{overflow-x:visible}}</style><style>:root{color-scheme:light dark;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}}:root[data-theme="dark"]{color-scheme:dark;--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}:root[data-theme="light"]{color-scheme:light}@media print{:root,:root[data-theme="dark"]{color-scheme:light;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}}body{background:var(--md-bg);color:var(--md-text);max-width:720px;margin:0 auto;padding:32px;display:flex;flex-direction:column;gap:10px;font:14px/1.55 -apple-system,BlinkMacSystemFont,'SF Pro','Segoe UI',sans-serif;overflow-wrap:break-word}body>:first-child{margin-top:0}h1,h2,h3,h4,h5,h6{margin:6px 0 0;line-height:1.25;font-weight:600;text-wrap:balance}h1{font-size:1.35em}h2{font-size:1.15em;color:var(--md-muted)}h3,h4,h5,h6{font-size:1em}p,ul,ol,blockquote,table,pre,hr{margin:0}strong{font-weight:600}a{color:var(--md-link);text-decoration:none}a:hover{text-decoration:underline}ul,ol{display:flex;flex-direction:column;gap:6px;padding-left:22px}ul{list-style:disc}ol{list-style:decimal}:is(li,td,th)>*+:is(p,ul,ol,blockquote){margin-top:6px}blockquote{display:flex;flex-direction:column;gap:10px;border-left:2px solid var(--md-rule);padding-left:10px;color:var(--md-muted)}:not(pre)>code{background:var(--md-fill);padding:1px 3px;border-radius:4px;font:.92em 'SF Mono',ui-monospace,Menlo,Consolas,monospace}a>code{background:none;color:inherit}pre{background:var(--md-fill);padding:10px 12px;border-radius:6px;overflow-x:auto;font:12px/1.5 'SF Mono',ui-monospace,Menlo,Consolas,monospace;margin-block:4px}pre code{background:none;padding:0;font:inherit}table{width:100%;border-collapse:separate;border-spacing:2px;font:inherit}th,td{padding:6px 8px;border-radius:3px;text-align:left;vertical-align:top}th{background:var(--md-fill-strong);font-weight:600}td{background:var(--md-fill)}:is(th,td) :not(pre)>code{background:transparent}hr{border:0;border-top:1px solid var(--md-rule-strong);margin-block:10px}img{max-width:100%;height:auto;border-radius:4px}</style>
-</head><body>
-<pre><code class="language-javascript">/* ================= 座位表模組（seating.js） =================
+/* ================= 座位表模組（seating.js） =================
    搭配 index.html 使用：座位資料存在 c.seating，隨班級一起同步到雲端。 */
 
 (function(){
-  const st = document.createElement(&#34;style&#34;);
+  const st = document.createElement("style");
   st.textContent = `
   .seat-stage{background:var(--ink);color:#EDE9DC;text-align:center;padding:6px;border-radius:var(--radius);margin:0 auto 14px;max-width:360px;font-size:13px;letter-spacing:4px;}
   .seat-grid{display:grid;gap:8px;}
@@ -20,25 +18,27 @@
   .seat-score{font-size:12px;color:var(--ink-soft);}
   .seat-x{position:absolute;top:2px;right:6px;font-size:11px;color:var(--ink-soft);}
   .seat-x:hover{color:var(--seal);}
+  .seat-edit{position:absolute;top:2px;left:6px;font-size:12px;color:var(--ink-soft);}
+  .seat-edit:hover{color:var(--ink);}
   .seat-chip{cursor:pointer;}
   .seat-chip.sel{background:var(--seal);color:#fff;border-color:var(--seal);}
   `;
   document.head.appendChild(st);
 })();
 
-let seatMode = &#34;move&#34;;   // move | score | aisle
-let seatSel = null;      // {type:&#34;student&#34;,id} 或 {type:&#34;seat&#34;,key}
+let seatMode = "move";   // move | score | aisle
+let seatSel = null;      // {type:"student",id} 或 {type:"seat",key}
 
 function getSeating(c){
-  if(!c.seating) c.seating = { rows:5, cols:6, seats:{}, blocked:{} };
+  if(!c.seating) c.seating = { rows:6, cols:5, seats:{}, blocked:{} };
   return c.seating;
 }
 function seatOf(sg, sid){
-  return Object.keys(sg.seats).find(k =&gt; sg.seats[k] === sid);
+  return Object.keys(sg.seats).find(k => sg.seats[k] === sid);
 }
 function shuffleArr(a){
   a = [...a];
-  for(let i=a.length-1;i&gt;0;i--){
+  for(let i=a.length-1;i>0;i--){
     const j = Math.floor(Math.random()*(i+1));
     [a[i],a[j]] = [a[j],a[i]];
   }
@@ -46,8 +46,8 @@ function shuffleArr(a){
 }
 function freeSeatKeys(sg){
   const keys = [];
-  for(let r=0;r&lt;sg.rows;r++) for(let k=0;k&lt;sg.cols;k++){
-    const key = r+&#34;-&#34;+k;
+  for(let r=0;r<sg.rows;r++) for(let k=0;k<sg.cols;k++){
+    const key = r+"-"+k;
     if(!sg.blocked[key]) keys.push(key);
   }
   return keys;
@@ -59,13 +59,13 @@ function setSeatMode(m){ seatMode = m; seatSel = null; renderView(); }
 function resizeSeating(){
   const c = currentClass(); if(!c) return;
   const sg = getSeating(c);
-  const rows = Math.min(15, Math.max(1, Number(document.getElementById(&#34;seatRows&#34;).value) || sg.rows));
-  const cols = Math.min(15, Math.max(1, Number(document.getElementById(&#34;seatCols&#34;).value) || sg.cols));
-  const keep = obj =&gt; {
+  const rows = Math.min(15, Math.max(1, Number(document.getElementById("seatRows").value) || sg.rows));
+  const cols = Math.min(15, Math.max(1, Number(document.getElementById("seatCols").value) || sg.cols));
+  const keep = obj => {
     const out = {};
-    Object.keys(obj).forEach(key=&gt;{
-      const [r,k] = key.split(&#34;-&#34;).map(Number);
-      if(r&lt;rows &amp;&amp; k&lt;cols) out[key] = obj[key];
+    Object.keys(obj).forEach(key=>{
+      const [r,k] = key.split("-").map(Number);
+      if(r<rows && k<cols) out[key] = obj[key];
     });
     return out;
   };
@@ -76,8 +76,8 @@ function resizeSeating(){
 }
 
 function seatPickStudent(sid){
-  seatMode = &#34;move&#34;;
-  seatSel = (seatSel &amp;&amp; seatSel.type===&#34;student&#34; &amp;&amp; seatSel.id===sid) ? null : {type:&#34;student&#34;, id:sid};
+  seatMode = "move";
+  seatSel = (seatSel && seatSel.type==="student" && seatSel.id===sid) ? null : {type:"student", id:sid};
   renderView();
 }
 
@@ -85,14 +85,14 @@ function seatClick(key){
   const c = currentClass(); if(!c) return;
   const sg = getSeating(c);
 
-  if(seatMode === &#34;aisle&#34;){
+  if(seatMode === "aisle"){
     if(sg.blocked[key]) delete sg.blocked[key];
     else { sg.blocked[key] = true; delete sg.seats[key]; }
     save(); renderView(); return;
   }
   if(sg.blocked[key]) return;
 
-  if(seatMode === &#34;score&#34;){
+  if(seatMode === "score"){
     const sid = sg.seats[key];
     if(sid) bumpScore(sid, 1);
     return;
@@ -100,10 +100,11 @@ function seatClick(key){
 
   // 排座位模式
   if(!seatSel){
-    if(sg.seats[key]){ seatSel = {type:&#34;seat&#34;, key}; renderView(); }
+    if(sg.seats[key]){ seatSel = {type:"seat", key}; renderView(); }
+    else seatFillName(key);
     return;
   }
-  if(seatSel.type === &#34;student&#34;){
+  if(seatSel.type === "student"){
     sg.seats[key] = seatSel.id;      // 原本坐這裡的人會回到「未入座」
     seatSel = null; save(); renderView(); return;
   }
@@ -122,41 +123,41 @@ function seatRemove(key, ev){
 }
 
 function seatDragStart(ev, type, val){
-  if(seatMode !== &#34;move&#34;){ ev.preventDefault(); return; }
-  seatSel = type===&#34;seat&#34; ? {type:&#34;seat&#34;, key:val} : {type:&#34;student&#34;, id:val};
-  ev.dataTransfer.setData(&#34;text/plain&#34;,&#34;seat&#34;);
-  ev.dataTransfer.effectAllowed = &#34;move&#34;;
+  if(seatMode !== "move"){ ev.preventDefault(); return; }
+  seatSel = type==="seat" ? {type:"seat", key:val} : {type:"student", id:val};
+  ev.dataTransfer.setData("text/plain","seat");
+  ev.dataTransfer.effectAllowed = "move";
 }
 function seatDrop(ev, key){
   ev.preventDefault();
-  if(seatMode===&#34;move&#34; &amp;&amp; seatSel) seatClick(key);
+  if(seatMode==="move" && seatSel) seatClick(key);
 }
 
 function seatRandom(){
   const c = currentClass(); if(!c || !c.students.length) return;
-  if(!confirm(&#34;要把全班學生隨機重新排座位嗎？目前的座位會被覆蓋。&#34;)) return;
+  if(!confirm("要把全班學生隨機重新排座位嗎？目前的座位會被覆蓋。")) return;
   const sg = getSeating(c);
   const free = shuffleArr(freeSeatKeys(sg));
   const studs = shuffleArr(c.students);
   sg.seats = {};
-  studs.forEach((s,i)=&gt;{ if(i&lt;free.length) sg.seats[free[i]] = s.id; });
-  if(studs.length &gt; free.length) alert(`座位只有 ${free.length} 個，還有 ${studs.length-free.length} 位學生沒有座位，請增加行列數。`);
+  studs.forEach((s,i)=>{ if(i<free.length) sg.seats[free[i]] = s.id; });
+  if(studs.length > free.length) alert(`座位只有 ${free.length} 個，還有 ${studs.length-free.length} 位學生沒有座位，請增加行列數。`);
   seatSel = null; save(); renderView();
 }
 function seatByNumber(){
   const c = currentClass(); if(!c || !c.students.length) return;
-  if(!confirm(&#34;要依座號由前到後、由左到右排座位嗎？目前的座位會被覆蓋。&#34;)) return;
+  if(!confirm("要依座號由前到後、由左到右排座位嗎？目前的座位會被覆蓋。")) return;
   const sg = getSeating(c);
   const free = freeSeatKeys(sg);
-  const studs = [...c.students].sort((a,b)=&gt;a.seatNo-b.seatNo);
+  const studs = [...c.students].sort((a,b)=>a.seatNo-b.seatNo);
   sg.seats = {};
-  studs.forEach((s,i)=&gt;{ if(i&lt;free.length) sg.seats[free[i]] = s.id; });
-  if(studs.length &gt; free.length) alert(`座位只有 ${free.length} 個，還有 ${studs.length-free.length} 位學生沒有座位，請增加行列數。`);
+  studs.forEach((s,i)=>{ if(i<free.length) sg.seats[free[i]] = s.id; });
+  if(studs.length > free.length) alert(`座位只有 ${free.length} 個，還有 ${studs.length-free.length} 位學生沒有座位，請增加行列數。`);
   seatSel = null; save(); renderView();
 }
 function seatClearAll(){
   const c = currentClass(); if(!c) return;
-  if(!confirm(&#34;確定要清空所有座位嗎？（走道設定會保留）&#34;)) return;
+  if(!confirm("確定要清空所有座位嗎？（走道設定會保留）")) return;
   getSeating(c).seats = {};
   seatSel = null; save(); renderView();
 }
@@ -165,78 +166,121 @@ function seatClearAll(){
 function renderSeating(panel, c){
   const sg = getSeating(c);
   const placed = new Set(Object.values(sg.seats));
-  const unseated = [...c.students].sort((a,b)=&gt;a.seatNo-b.seatNo).filter(s=&gt;!placed.has(s.id));
+  const unseated = [...c.students].sort((a,b)=>a.seatNo-b.seatNo).filter(s=>!placed.has(s.id));
   const dayAtt = c.attendance[attDate] || {};
   const byId = {};
-  c.students.forEach(s =&gt; byId[s.id] = s);
+  c.students.forEach(s => byId[s.id] = s);
 
-  let cells = &#34;&#34;;
-  for(let r=0;r&lt;sg.rows;r++){
-    for(let k=0;k&lt;sg.cols;k++){
-      const key = r+&#34;-&#34;+k;
+  let cells = "";
+  for(let r=0;r<sg.rows;r++){
+    for(let k=0;k<sg.cols;k++){
+      const key = r+"-"+k;
       if(sg.blocked[key]){
-        cells += `&lt;div class=&#34;seat blocked&#34; onclick=&#34;seatClick(&#39;${key}&#39;)&#34;&gt;&lt;/div&gt;`;
+        cells += `<div class="seat blocked" onclick="seatClick('${key}')"></div>`;
         continue;
       }
       const s = byId[sg.seats[key]];
-      const isSel = seatSel &amp;&amp; seatSel.type===&#34;seat&#34; &amp;&amp; seatSel.key===key;
-      const drop = `ondragover=&#34;event.preventDefault()&#34; ondrop=&#34;seatDrop(event,&#39;${key}&#39;)&#34;`;
+      const isSel = seatSel && seatSel.type==="seat" && seatSel.key===key;
+      const drop = `ondragover="event.preventDefault()" ondrop="seatDrop(event,'${key}')"`;
       if(!s){
-        cells += `&lt;div class=&#34;seat empty-seat&#34; onclick=&#34;seatClick(&#39;${key}&#39;)&#34; ${drop}&gt;空位&lt;/div&gt;`;
+        cells += `<div class="seat empty-seat" onclick="seatClick('${key}')" ${drop}>${seatMode==="move"?"＋ 填姓名":"空位"}</div>`;
         continue;
       }
       const att = dayAtt[s.id];
-      const attCls = att===&#34;present&#34; ? &#34;pres&#34; : att===&#34;late&#34; ? &#34;late&#34; : att===&#34;absent&#34; ? &#34;abs&#34; : &#34;&#34;;
+      const attCls = att==="present" ? "pres" : att==="late" ? "late" : att==="absent" ? "abs" : "";
       cells += `
-        &lt;div class=&#34;seat ${attCls} ${isSel?&#34;sel&#34;:&#34;&#34;}&#34; onclick=&#34;seatClick(&#39;${key}&#39;)&#34; ${drop}
-             ${seatMode===&#34;move&#34; ? `draggable=&#34;true&#34; ondragstart=&#34;seatDragStart(event,&#39;seat&#39;,&#39;${key}&#39;)&#34;` : &#34;&#34;}&gt;
-          ${seatMode===&#34;move&#34; ? `&lt;span class=&#34;seat-x&#34; onclick=&#34;seatRemove(&#39;${key}&#39;,event)&#34;&gt;✕&lt;/span&gt;` : &#34;&#34;}
-          &lt;div class=&#34;seat-no&#34;&gt;${s.seatNo}號&lt;/div&gt;
-          &lt;div class=&#34;seat-name&#34;&gt;${escapeHtml(s.name)}&lt;/div&gt;
-          &lt;div class=&#34;seat-score&#34;&gt;${s.score||0} 分&lt;/div&gt;
-          ${seatMode===&#34;score&#34; ? `&lt;button class=&#34;small minus&#34; onclick=&#34;event.stopPropagation();bumpScore(&#39;${s.id}&#39;,-1)&#34;&gt;－1&lt;/button&gt;` : &#34;&#34;}
-        &lt;/div&gt;`;
+        <div class="seat ${attCls} ${isSel?"sel":""}" onclick="seatClick('${key}')" ${drop}
+             ${seatMode==="move" ? `draggable="true" ondragstart="seatDragStart(event,'seat','${key}')"` : ""}>
+          ${seatMode==="move" ? `<span class="seat-x" onclick="seatRemove('${key}',event)">✕</span><span class="seat-edit" onclick="seatRename('${s.id}',event)">✎</span>` : ""}
+          <div class="seat-no">${s.seatNo}號</div>
+          <div class="seat-name">${escapeHtml(s.name)}</div>
+          <div class="seat-score">${s.score||0} 分</div>
+          ${seatMode==="score" ? `<button class="small minus" onclick="event.stopPropagation();bumpScore('${s.id}',-1)">－1</button>` : ""}
+        </div>`;
     }
   }
 
   const hints = {
-    move: &#34;點選下方一位「未入座」的學生，再點空位即可入座；點兩個座位可互換；電腦上也可以直接拖曳。座位右上角的 ✕ 可讓學生離座。&#34;,
-    score: &#34;點座位加 1 分，按「－1」扣 1 分（成績鎖定時無法修改）。&#34;,
-    aisle: &#34;點任何格子，可切換成「走道／空位」（斜線格），再點一次就恢復成座位。&#34;
+    move: "直接點空位可輸入學生姓名（✎ 可改名）；也可以點選下方「未入座」的學生，再點空位入座；點兩個座位可互換；電腦上也可以直接拖曳。座位右上角的 ✕ 可讓學生離座。",
+    score: "點座位加 1 分，按「－1」扣 1 分（成績鎖定時無法修改）。",
+    aisle: "點任何格子，可切換成「走道／空位」（斜線格），再點一次就恢復成座位。"
   };
-  const modeBtn = (m, label) =&gt;
-    `&lt;button class=&#34;btn ${seatMode===m?&#34;&#34;:&#34;ghost&#34;}&#34; onclick=&#34;setSeatMode(&#39;${m}&#39;)&#34;&gt;${label}&lt;/button&gt;`;
+  const modeBtn = (m, label) =>
+    `<button class="btn ${seatMode===m?"":"ghost"}" onclick="setSeatMode('${m}')">${label}</button>`;
 
   panel.innerHTML = `
-    &lt;div class=&#34;toolbar&#34;&gt;
-      ${modeBtn(&#34;move&#34;,&#34;排座位&#34;)}
-      ${modeBtn(&#34;score&#34;,&#34;加減分&#34;)}
-      ${modeBtn(&#34;aisle&#34;,&#34;設定走道&#34;)}
-    &lt;/div&gt;
-    &lt;div class=&#34;field-row&#34;&gt;
-      &lt;label&gt;排數（由前到後）&lt;/label&gt;
-      &lt;input type=&#34;number&#34; id=&#34;seatRows&#34; min=&#34;1&#34; max=&#34;15&#34; value=&#34;${sg.rows}&#34; style=&#34;width:64px;&#34;&gt;
-      &lt;label&gt;每排幾位&lt;/label&gt;
-      &lt;input type=&#34;number&#34; id=&#34;seatCols&#34; min=&#34;1&#34; max=&#34;15&#34; value=&#34;${sg.cols}&#34; style=&#34;width:64px;&#34;&gt;
-      &lt;button class=&#34;btn ghost&#34; onclick=&#34;resizeSeating()&#34;&gt;套用大小&lt;/button&gt;
-      &lt;button class=&#34;btn ghost&#34; onclick=&#34;seatByNumber()&#34;&gt;依座號排列&lt;/button&gt;
-      &lt;button class=&#34;btn ghost&#34; onclick=&#34;seatRandom()&#34;&gt;隨機排座位&lt;/button&gt;
-      &lt;button class=&#34;btn ghost&#34; onclick=&#34;seatClearAll()&#34;&gt;清空座位&lt;/button&gt;
-    &lt;/div&gt;
-    &lt;div class=&#34;hint&#34; style=&#34;margin:0 0 12px;&#34;&gt;${hints[seatMode]}　格子顏色對應「課堂點名」分頁目前選擇的日期（${attDate}）：綠＝出席、黃＝遲到、紅＝缺席。&lt;/div&gt;
-    &lt;div class=&#34;seat-stage&#34;&gt;講　台&lt;/div&gt;
-    &lt;div class=&#34;seat-grid&#34; style=&#34;grid-template-columns:repeat(${sg.cols}, minmax(78px, 1fr));&#34;&gt;${cells}&lt;/div&gt;
-    &lt;div class=&#34;section-label&#34;&gt;未入座的學生（${unseated.length} 位）&lt;/div&gt;
-    &lt;div class=&#34;chip-row&#34;&gt;
-      ${unseated.length ? unseated.map(s=&gt;`
-        &lt;span class=&#34;chip seat-chip ${seatSel&amp;&amp;seatSel.type===&#34;student&#34;&amp;&amp;seatSel.id===s.id?&#34;sel&#34;:&#34;&#34;}&#34;
-              draggable=&#34;true&#34; ondragstart=&#34;seatDragStart(event,&#39;student&#39;,&#39;${s.id}&#39;)&#34;
-              onclick=&#34;seatPickStudent(&#39;${s.id}&#39;)&#34;&gt;${s.seatNo}號 ${escapeHtml(s.name)}&lt;/span&gt;`).join(&#34;&#34;)
-        : `&lt;span style=&#34;font-size:13px;color:var(--ink-soft);&#34;&gt;所有學生都已入座 ✓&lt;/span&gt;`}
-    &lt;/div&gt;
+    <div class="toolbar">
+      ${modeBtn("move","排座位")}
+      ${modeBtn("score","加減分")}
+      ${modeBtn("aisle","設定走道")}
+    </div>
+    <div class="field-row">
+      <label>排數（由前到後）</label>
+      <input type="number" id="seatRows" min="1" max="15" value="${sg.rows}" style="width:64px;">
+      <label>每排幾位</label>
+      <input type="number" id="seatCols" min="1" max="15" value="${sg.cols}" style="width:64px;">
+      <button class="btn ghost" onclick="resizeSeating()">套用大小</button>
+      <button class="btn ghost" onclick="seatByNumber()">依座號排列</button>
+      <button class="btn ghost" onclick="seatRandom()">隨機排座位</button>
+      <button class="btn ghost" onclick="seatClearAll()">清空座位</button>
+    </div>
+    <div class="hint" style="margin:0 0 12px;">${hints[seatMode]}　格子顏色對應「課堂點名」分頁目前選擇的日期（${attDate}）：綠＝出席、黃＝遲到、紅＝缺席。</div>
+    <div class="seat-stage">講　台</div>
+    <div class="seat-grid" style="grid-template-columns:repeat(${sg.cols}, minmax(78px, 1fr));">${cells}</div>
+    <div class="section-label">未入座的學生（${unseated.length} 位）</div>
+    <div class="chip-row">
+      ${unseated.length ? unseated.map(s=>`
+        <span class="chip seat-chip ${seatSel&&seatSel.type==="student"&&seatSel.id===s.id?"sel":""}"
+              draggable="true" ondragstart="seatDragStart(event,'student','${s.id}')"
+              onclick="seatPickStudent('${s.id}')">${s.seatNo}號 ${escapeHtml(s.name)}</span>`).join("")
+        : `<span style="font-size:13px;color:var(--ink-soft);">所有學生都已入座 ✓</span>`}
+    </div>
   `;
 }
 
-</code></pre>
 
-</body></html>
+/* ---------- 直接在座位上填姓名 / 改名 ---------- */
+function seatFillName(key){
+  const c = currentClass(); if(!c) return;
+  const sg = getSeating(c);
+  const name = prompt("請輸入這個座位的學生姓名");
+  if(!name || !name.trim()) return;
+  const nm = name.trim();
+  const placed = new Set(Object.values(sg.seats));
+  let s = c.students.find(x => x.name === nm);
+  if(s && placed.has(s.id)){ alert(`「${nm}」已經在座位上了，要換位置請點他的座位再點新位置。`); return; }
+  if(!s){
+    s = { id:uid(), seatNo: nextSeatNo(c), name:nm, score:0, marks:{} };
+    c.students.push(s);
+    c.students.sort((a,b)=>a.seatNo-b.seatNo);
+  }
+  sg.seats[key] = s.id;
+  save(); renderView();
+}
+function seatRename(sid, ev){
+  ev.stopPropagation();
+  const c = currentClass(); if(!c) return;
+  const s = c.students.find(x => x.id === sid); if(!s) return;
+  const nm = prompt("修改學生姓名", s.name);
+  if(!nm || !nm.trim()) return;
+  setName(sid, nm.trim());
+  renderView();
+}
+
+/* ---------- 自動掛上「座位表」分頁（不需要再改 index.html 其他地方） ---------- */
+(function(){
+  if(typeof TAB_DEFS !== "undefined" && !TAB_DEFS.some(t => t.key === "seating")){
+    const i = TAB_DEFS.findIndex(t => t.key === "io");
+    TAB_DEFS.splice(i < 0 ? TAB_DEFS.length : i, 0, {key:"seating", label:"座位表"});
+  }
+  if(typeof renderView === "function" && !renderView.__seating){
+    const orig = renderView;
+    renderView = function(){
+      const c = currentClass();
+      if(currentView === "seating" && c){ renderSeating(document.getElementById("panel"), c); return; }
+      orig();
+    };
+    renderView.__seating = true;
+  }
+  if(typeof renderTabs === "function") renderTabs();
+})();
