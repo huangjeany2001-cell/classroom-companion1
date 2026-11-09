@@ -658,6 +658,7 @@ const TAB_DEFS = [
   {key:"attendance", label:"課堂點名"},
   {key:"draw", label:"抽籤分組"},
   {key:"scores", label:"成績登錄"},
+  {key:"seating", label:"座位表"},
   {key:"io", label:"匯出入 Excel"},
 ];
 function renderTabs(){
@@ -679,6 +680,7 @@ function renderView(){
   if(currentView==="attendance") return renderAttendance(panel, c);
   if(currentView==="draw") return renderDraw(panel, c);
   if(currentView==="scores") return renderScores(panel, c);
+  if(currentView==="seating") return renderSeating(panel, c);
   if(currentView==="io") return renderIo(panel, c);
 }
 
@@ -840,5 +842,6 @@ function escapeAttr(str){ return escapeHtml(str); }
 renderAll();
 loadFromCloud().then(renderAll);
 </script>
+<script src="seating.js"></script>
 </body>
 </html>
